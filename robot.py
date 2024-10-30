@@ -1,11 +1,11 @@
 import wpilib
 import rev._rev as rev
-from SwerveDrive import swerve
+from SwerveDrive import SwerveModule
 
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
-        self.frontRight = swerve.SwerveModule(3,2)
+        self.frontRight = SwerveModule.SwerveModule(3,2)
     
     def autonomousInit(self):
         pass
