@@ -1,11 +1,14 @@
 import wpilib
+import wpimath
 import rev._rev as rev
+import wpimath.kinematics
 from SwerveDrive import SwerveModule
+from wpimath.geometry import Rotation2d
 
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
-        self.frontRight = SwerveModule.SwerveModule(3,2)
+        self.frontRight = SwerveModule.SwerveModule(5,6,1)
     
     def autonomousInit(self):
         pass
@@ -14,8 +17,8 @@ class MyRobot(wpilib.TimedRobot):
         pass
     def teleopInit(self):
         pass
-    def telopPeriodic(self):
-        self.frontRight.run()
+    def teleopPeriodic(self):
+        self.frontRight.run(wpimath.kinematics.SwerveModuleState(0,Rotation2d(0)))
         
     def testInit(self):
         pass

@@ -3,7 +3,6 @@ import rev._rev as rev
 from wpimath.kinematics import SwerveModuleState
 from wpimath.geometry import Rotation2d
 from wpimath.controller import PIDController
-from wpimath.trajectory import TrapazoidProfile
 from wpimath import angleModulus
 
 from phoenix6 import hardware as ctre
@@ -53,7 +52,7 @@ class ModuleConstants:
     #TURN_MOTOR_FEEDFOREWARD = 0.0 # [untuned]
 
     # last year theoretical rpm -> mps was rpm * 7.049382716E-4 = mps
-    DRIVE_MOTOR_MAX_METERS_PER_SECOND = 0.0 # [untuned]
+    DRIVE_MOTOR_MAX_METERS_PER_SECOND = 1.0 # [untuned] 0.0
 
 
 
@@ -76,7 +75,7 @@ class SwerveModule:
         self.turnPID.enableContinuousInput(0,tau)
 
     def getRotation(self) -> Rotation2d:
-        return Rotation2d.fromRotations( self.turnEncoder.get_position() ) # relative position
+        return Rotation2d.fromRotations(self.turnEncoder.get_position().value_as_double) # relative position
         
     def run(self, unoptimezedDesiredState: SwerveModuleState):
         currentAngle = self.getRotation()
@@ -84,7 +83,7 @@ class SwerveModule:
         OptimizedState = SwerveModuleState.optimize(unoptimezedDesiredState, currentAngle)
         OptimizedState.speed *= (OptimizedState.angle - currentAngle).cos()
 
-        currentModuleRotationRadians = wpimath.angleModulus(self.getRotation().radians())
+        currentModuleRotationRadians = angleModulus(self.getRotation().radians())
 
         turnOutput = self.turnPID.calculate(currentModuleRotationRadians,OptimizedState.angle.radians())
 
@@ -96,8 +95,8 @@ class SwerveModule:
         # get the speeds between -1 and 1
 
         # no feedforeward set up for the things
-        self.driveMotor.run(OptimizedState.speed / ModuleConstants.DRIVE_MOTOR_MAX_METERS_PER_SECOND)
-        self.turnMotor.run(turnOutput)
+        self.driveMotor.set(OptimizedState.speed / ModuleConstants.DRIVE_MOTOR_MAX_METERS_PER_SECOND)
+        self.turnMotor.set(turnOutput)
 
 
 
