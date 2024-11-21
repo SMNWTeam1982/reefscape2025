@@ -46,7 +46,7 @@ class ModuleConstants:
 
 
     # these coefficients must be positive
-    TURN_MOTOR_PROPORTIONAL_COEFFICIENT = 0.0 # [untuned]
+    TURN_MOTOR_PROPORTIONAL_COEFFICIENT = 0.1 # [untuned]
     TURN_MOTOR_INTEGRAL_COEFFICIENT = 0.0 # [untuned]
     TURN_MOTOR_DERIVATIVE_COEFFICIENT = 0.0 # [untuned]
     #TURN_MOTOR_FEEDFOREWARD = 0.0 # [untuned]
