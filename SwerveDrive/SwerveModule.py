@@ -1,102 +1,162 @@
-import wpilib
-import rev._rev as rev
-from wpimath.kinematics import SwerveModuleState
-from wpimath.geometry import Rotation2d
-from wpimath.controller import PIDController
-from wpimath import angleModulus
+#
+# Copyright (c) FIRST and other WPILib contributors.
+# Open Source Software; you can modify and/or share it under the terms of
+# the WPILib BSD license file in the root directory of this project.
+#
 
+import math
+import wpilib
+import wpimath.kinematics
+import wpimath.geometry
+import wpimath.controller
+import wpimath.trajectory
+
+import rev._rev as rev
 from phoenix6 import hardware as ctre
 
-from math import tau
-
-# these is calculated through testing, DO NOT CHANGE, these should be the same for all swerve modules, slight differences will be averaged out
-class ModuleConstants: 
-    # kA can be ignored because as of 2024 all approved frc motors have this: 
-    # "the relationship between voltage and acceleration (at constant velocity) is almost perfectly linear for FRC components" - wpilib docs
-    # position motor set point = kS * sign( desired velocity ) + kV * (desired velocity) + TODO
-
-    # also called kS (voltage needed to overcome static friction)
-    # a kS of 0 means that no matter how small of a value you give to the motor it will move
-    # kS of 0 is not possible in real life, but kS can be set to 0 if you want to ignore it
-    DRIVE_MOTOR_MINIMUM_SET_BEFORE_MOVEMENT = 0.0 # [untuned]
-    TURN_MOTOR_MINIMUM_SET_BEFORE_MOVEMENT = 0.0 # [untuned]
-
-    # also called kV (variable friction, increases with voltage) 
-    # also called f because kV is a feedforward value
-    # kV of 0 means that the motor experiences no friction
-    # kV of 0 means set it to 0.5 then 0.0 the motor will stay at 0.5 speed
-    # kV of 0 is not possible in real life
-    # kV is only necessary for velocity controlers
-    DRIVE_MOTOR_SET_NEEDED_TO_HOLD_VELOCITY = 0.0 # [untuned]
-
-    # also called kP
-    # error * kP
-    DRIVE_MOTOR_PROPORTIONAL_GAIN = 0.0 # [untuned]
-
-    # also called kI
-    # accumulatedError * kI
-    DRIVE_MOTOR_INTEGRAL_GAIN = 0.0 # [untuned]
-
-    # also called kD
-    # rateError * kD
-    DRIVE_MOTOR_DERIVATIVE_GAIN = 0.0 # [untuned]
-
-    # self explanitory (i hope)
-    DRIVE_MOTOR_MAX_VELOCITY_METERS_PER_SECOND = 1.0 # [untuned]
+kWheelRadius = 0.0508
+kEncoderResolution = 4096
+kModuleMaxAngularVelocity = math.pi
+kModuleMaxAngularAcceleration = math.tau
 
 
-    # these coefficients must be positive
-    TURN_MOTOR_PROPORTIONAL_COEFFICIENT = 0.1 # [untuned]
-    TURN_MOTOR_INTEGRAL_COEFFICIENT = 0.0 # [untuned]
-    TURN_MOTOR_DERIVATIVE_COEFFICIENT = 0.0 # [untuned]
-    #TURN_MOTOR_FEEDFOREWARD = 0.0 # [untuned]
+class ModuleConstants:
+    WHEEL_RADIUS = 0.0
 
-    # last year theoretical rpm -> mps was rpm * 7.049382716E-4 = mps
-    DRIVE_MOTOR_MAX_METERS_PER_SECOND = 1.0 # [untuned] 0.0
+    # assume all values are untuned unless specified with a date of tuning
+    MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = 0.0
+    MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = 0.0
+    TURN_PROPORTIONAL_GAIN = 1.0
+    TURN_INTEGRAL_GAIN = 0.0
+    TURN_DERIVATIVE_GAIN = 0.0
+    TURN_STATIC_GAIN_VOLTS = 1.0
+    TURN_VELOCITY_GAIN_VOLT_SECONDS_PER_RADIAN = 0.5
 
+    # assume all values are untuned unless specified with a date of tuning
+    MAX_VELOCITY_METERS_PER_SECOND = 0.0
+    MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 0.0
+    DRIVE_PROPORTIONAL_GAIN = 1.0
+    DRIVE_INTEGRAL_GAIN = 0.0
+    DRIVE_DERIVATIVE_GAIN = 0.0
+    DRIVE_STATIC_GAIN_VOLTS = 1.0
+    DRIVE_VELOCITY_GAIN_VOLT_SECONDS_PER_METER = 0.5
 
+    
 
 class SwerveModule:
     def __init__(
         self,
-        driveMotorID: int,
-        turnMotorID: int,
-        turnEncoderID: int
-    ):
-        self.driveMotor = rev.CANSparkMax(driveMotorID, rev.CANSparkLowLevel.MotorType.kBrushless)
-        self.turnMotor = rev.CANSparkMax(turnMotorID, rev.CANSparkLowLevel.MotorType.kBrushless)
-        self.turnEncoder = ctre.CANcoder(turnEncoderID)
-        self.turnPID = PIDController(
-            ModuleConstants.TURN_MOTOR_PROPORTIONAL_COEFFICIENT,
-            ModuleConstants.TURN_MOTOR_INTEGRAL_COEFFICIENT,
-            ModuleConstants.TURN_MOTOR_DERIVATIVE_COEFFICIENT
+        driveMotorCANID: int,
+        turningMotorCANID: int,
+        turningEncoderCANID: int
+    ) -> None:
+        """Constructs a SwerveModule with a drive motor, turning motor, drive encoder and turning encoder.
+
+        :param driveMotorCANID:      CANID of drive motor
+        :param turningMotorCANID:    CANID of turn motor
+        :param turningEncoderCANID:  CANID of the absolute encoder on the module
+        """
+        self.driveMotor = wpilib.CANSparkMax(driveMotorCANID,rev.CANSparkLowLevel.kBrushless)
+        self.turningMotor = wpilib.PWMSparkMax(turningMotorCANID,rev.CANSparkLowLevel.kBrushless)
+
+        self.driveEncoder = self.driveMotor.getEncoder()
+        self.turningEncoder = self.turningMotor.getEncoder()
+
+        self.moduleEncoder = ctre.CANcoder(turningEncoderCANID)
+
+        # Gains are for example purposes only - must be determined for your own robot!
+        self.drivePIDController = wpimath.controller.PIDController(
+            ModuleConstants.DRIVE_PROPORTIONAL_GAIN,
+            ModuleConstants.DRIVE_INTEGRAL_GAIN,
+            ModuleConstants.DRIVE_DERIVATIVE_GAIN,
+        )
+        # Gains are for example purposes only - must be determined for your own robot!
+        self.turningPIDController = wpimath.controller.PIDController(
+            ModuleConstants.TURN_PROPORTIONAL_GAIN,
+            ModuleConstants.TURN_INTEGRAL_GAIN,
+            ModuleConstants.DRIVE_DERIVATIVE_GAIN
+        )
+        # Gains are for example purposes only - must be determined for your own robot!
+        self.driveFeedforward = wpimath.controller.SimpleMotorFeedforwardMeters(
+            ModuleConstants.DRIVE_STATIC_GAIN_VOLTS,
+            ModuleConstants.DRIVE_VELOCITY_GAIN_VOLT_SECONDS_PER_METER
+        )
+        self.turnFeedforward = wpimath.controller.SimpleMotorFeedforwardRadians(
+            ModuleConstants.TURN_STATIC_GAIN_VOLTS,
+            ModuleConstants.TURN_VELOCITY_GAIN_VOLT_SECONDS_PER_RADIAN
         )
 
-        self.turnPID.enableContinuousInput(0,tau)
+        # Set the distance per pulse for the drive encoder. We can simply use the
+        # distance traveled for one rotation of the wheel divided by the encoder
+        # resolution.
+        self.driveEncoder.setDistancePerPulse(
+            math.tau * kWheelRadius / kEncoderResolution
+        )
 
-    def getRotation(self) -> Rotation2d:
-        return Rotation2d.fromRotations(self.turnEncoder.get_position().value_as_double) # relative position
+        # Set the distance (in this case, angle) in radians per pulse for the turning encoder.
+        # This is the the angle through an entire rotation (2 * pi) divided by the
+        # encoder resolution.
+        self.turningEncoder.setDistancePerPulse(math.tau / kEncoderResolution)
         
-    def run(self, unoptimezedDesiredState: SwerveModuleState):
-        currentAngle = self.getRotation()
+        # Limit the PID Controller's input range between -pi and pi and set the input
+        # to be continuous.
+        self.turningPIDController.enableContinuousInput(-math.pi, math.pi)
 
-        OptimizedState = SwerveModuleState.optimize(unoptimezedDesiredState, currentAngle)
-        OptimizedState.speed *= (OptimizedState.angle - currentAngle).cos()
+    def getState(self) -> wpimath.kinematics.SwerveModuleState:
+        """Returns the current state of the module.
 
-        currentModuleRotationRadians = angleModulus(self.getRotation().radians())
+        :returns: The current state of the module.
+        """
+        return wpimath.kinematics.SwerveModuleState(
+            self.driveEncoder.getRate(),
+            wpimath.geometry.Rotation2d(self.turningEncoder.getDistance()),
+        )
 
-        turnOutput = self.turnPID.calculate(currentModuleRotationRadians,OptimizedState.angle.radians())
+    def getPosition(self) -> wpimath.kinematics.SwerveModulePosition:
+        """Returns the current position of the module.
 
-        if turnOutput > 1:
-            turnOutput = 1
-        elif turnOutput < -1:
-            turnOutput = -1
+        :returns: The current position of the module.
+        """
+        return wpimath.kinematics.SwerveModulePosition(
+            self.driveEncoder.getDistance(),
+            wpimath.geometry.Rotation2d(self.turningEncoder.getDistance()),
+        )
 
-        # get the speeds between -1 and 1
+    def setDesiredState(
+        self, desiredState: wpimath.kinematics.SwerveModuleState
+    ) -> None:
+        """Sets the desired state for the module.
 
-        # no feedforeward set up for the things
-        self.driveMotor.set(OptimizedState.speed / ModuleConstants.DRIVE_MOTOR_MAX_METERS_PER_SECOND)
-        self.turnMotor.set(turnOutput)
+        :param desiredState: Desired state with speed and angle.
+        """
 
+        encoderRotation = wpimath.geometry.Rotation2d(self.turningEncoder.getDistance())
 
+        # Optimize the reference state to avoid spinning further than 90 degrees
+        state = wpimath.kinematics.SwerveModuleState.optimize(
+            desiredState, encoderRotation
+        )
 
+        # Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
+        # direction of travel that can occur when modules change directions. This results in smoother
+        # driving.
+        state.speed *= (state.angle - encoderRotation).cos()
+
+        # Calculate the drive output from the drive PID controller.
+        driveOutput = self.drivePIDController.calculate(
+            self.driveEncoder.getRate(), state.speed
+        )
+
+        driveFeedforward = self.driveFeedforward.calculate(state.speed)
+
+        # Calculate the turning motor output from the turning PID controller.
+        turnOutput = self.turningPIDController.calculate(
+            self.turningEncoder.getDistance(), state.angle.radians()
+        )
+
+        turnFeedforward = self.turnFeedforward.calculate(
+            self.turningPIDController.getSetpoint().velocity
+        )
+
+        self.driveMotor.setVoltage(driveOutput + driveFeedforward)
+        self.turningMotor.setVoltage(turnOutput + turnFeedforward)
