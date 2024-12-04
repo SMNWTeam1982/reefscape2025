@@ -97,7 +97,7 @@ class SwerveModule:
         # This is the the angle through an entire rotation (2 * pi) divided by the
         # encoder resolution.
         self.turningEncoder.setDistancePerPulse(math.tau / kEncoderResolution)
-
+        
         # Limit the PID Controller's input range between -pi and pi and set the input
         # to be continuous.
         self.turningPIDController.enableContinuousInput(-math.pi, math.pi)
