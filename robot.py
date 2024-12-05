@@ -20,7 +20,7 @@ class MyRobot(wpilib.TimedRobot):
     
     def teleopInit(self):
         pass
-    def telopPeriodic(self):
+    def teleopPeriodic(self):
         self.leftDrive.set(self.controller.getLeftY())
         
     def testInit(self):
