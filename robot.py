@@ -1,28 +1,24 @@
-# TODO: insert robot code here
 import wpilib
+import wpimath
 import rev._rev as rev
+import wpimath.kinematics
+from SwerveDrive import SwerveModule
+from wpimath.geometry import Rotation2d
 
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
-        self.leftDrive = rev.CANSparkMax(1, rev.CANSparkLowLevel.MotorType.kBrushless)
-        self.controller = wpilib.XboxController(0)
-        self.timer = wpilib.Timer()
+        self.frontRight = SwerveModule.SwerveModule(5,6,1)
     
     def autonomousInit(self):
-        self.timer.restart()
+        pass
 
     def autonomousPeriodic(self):
-        if self.timer.get() < 2.0:
-            self.leftDrive.set(0.5)
-        else:
-            self.leftDrive.stopMotor()
-    
+        pass
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
-        self.leftDrive.set(self.controller.getLeftY())
-        
+        self.frontRight.run(wpimath.kinematics.SwerveModuleState(0,Rotation2d(0)))        
     def testInit(self):
         pass
     def testPeriodic(self):
