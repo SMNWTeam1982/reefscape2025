@@ -14,12 +14,6 @@ import wpimath.trajectory
 import rev._rev as rev
 from phoenix6 import hardware as ctre
 
-kWheelRadius = 0.0508
-kEncoderResolution = 4096
-kModuleMaxAngularVelocity = math.pi
-kModuleMaxAngularAcceleration = math.tau
-
-
 class ModuleConstants:
     WHEEL_RADIUS = 0.0
 
