@@ -14,7 +14,7 @@ kMaxSpeed = 3.0  # 3 meters per second
 kMaxAngularSpeed = math.pi  # 1/2 rotation per second
 
 class DriveConstants:
-    MAX_SPEED_METERS_PER_SECOND = 3.0
+    MAX_SPEED_METERS_PER_SECOND = 4.5 # taken from 2024 code
     
     # translation values taken from 2024 code
     FRONT_LEFT_LOCATION = wpimath.geometry.Translation2d(0.2635, 0.2635)
