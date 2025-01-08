@@ -8,11 +8,19 @@ import math
 import wpilib
 import wpimath.geometry
 import wpimath.kinematics
-import swervemodule
+import SwerveModule
 
 kMaxSpeed = 3.0  # 3 meters per second
 kMaxAngularSpeed = math.pi  # 1/2 rotation per second
 
+class DriveConstants:
+    MAX_SPEED_METERS_PER_SECOND = 3.0
+    
+    # translation values taken from 2024 code
+    FRONT_LEFT_LOCATION = wpimath.geometry.Translation2d(0.2635, 0.2635)
+    FRONT_RIGHT_LOCATION = wpimath.geometry.Translation2d(0.2635, -0.2635)
+    BACK_LEFT_LOCATION = wpimath.geometry.Translation2d(-0.2635, 0.2635)
+    BACK_RIGHT_LOCATION = wpimath.geometry.Translation2d(-0.2635, -0.2635)
 
 class Drivetrain:
     """
@@ -20,16 +28,11 @@ class Drivetrain:
     """
 
     def __init__(self) -> None:
-        self.frontLeftLocation = wpimath.geometry.Translation2d(0.381, 0.381)
-        self.frontRightLocation = wpimath.geometry.Translation2d(0.381, -0.381)
-        self.backLeftLocation = wpimath.geometry.Translation2d(-0.381, 0.381)
-        self.backRightLocation = wpimath.geometry.Translation2d(-0.381, -0.381)
-
-        self.frontLeft = swervemodule.SwerveModule(1, 2, 0, 1, 2, 3)
-        self.frontRight = swervemodule.SwerveModule(3, 4, 4, 5, 6, 7)
-        self.backLeft = swervemodule.SwerveModule(5, 6, 8, 9, 10, 11)
-        self.backRight = swervemodule.SwerveModule(7, 8, 12, 13, 14, 15)
-
+        self.frontLeft = SwerveModule.SwerveModule(0,0,0)
+        self.frontRight = SwerveModule.SwerveModule(0,0,0)
+        self.backLeft = SwerveModule.SwerveModule(0,0,0)
+        self.backRight = SwerveModule.SwerveModule(0,0,0)
+        # edits end here
         self.gyro = wpilib.AnalogGyro(0)
 
         self.kinematics = wpimath.kinematics.SwerveDrive4Kinematics(
