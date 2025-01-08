@@ -19,6 +19,7 @@ class ModuleConstants:
 
     # value taken from 2024 code
     RPM_TO_METERS_PER_SECOND_CONVERSION_MULTIPLIER = 7.049382716E-4
+    POSITION_TO_METERS_TRAVELED_MULTIPLIER = 0.2855
 
     # assume all values are untuned unless specified with a date of tuning
     MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = 0.0
@@ -105,7 +106,7 @@ class SwerveModule:
         :returns: The current position of the module.
         """
         return wpimath.kinematics.SwerveModulePosition(
-            self.driveEncoder.getDistance(),
+            self.driveEncoder.getDistance() * ModuleConstants.POSITION_TO_METERS_TRAVELED_MULTIPLIER,
             wpimath.geometry.Rotation2d.fromRotations(self.moduleEncoder.get_position()),
         )
 
@@ -127,9 +128,10 @@ class SwerveModule:
         # Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
         # direction of travel that can occur when modules change directions. This results in smoother
         # driving.
-        state.speed *= (state.angle - encoderRotation).cos()
+        # this equation returns the cos of the angle between state.angle and encoderRotation
+        state.speed *= state.angle.cos() * encoderRotation.cos() + state.angle.sin() * encoderRotation.sin() 
 
-        # Calculate the drive output from the drive PID controller.
+        # Calculate the drive output from the drive PID controller. this will be added to the FF voltage
         driveOutput = self.drivePIDController.calculate(
             self.driveEncoder.getRate(), state.speed
         )
@@ -142,8 +144,8 @@ class SwerveModule:
         )
 
         turnFeedforward = self.turnFeedforward.calculate(
-            self.turningPIDController.getSetpoint().velocity
+            self.turningPIDController.getSetpoint().velocity # get the motor to move
         )
 
-        self.driveMotor.setVoltage(driveOutput + driveFeedforward)
-        self.turningMotor.setVoltage(turnOutput + turnFeedforward)
+        self.driveMotor.setVoltage(driveOutput + driveFeedforward) # both of these are in Volts
+        self.turningMotor.setVoltage(turnOutput + turnFeedforward) # both of these are in Volts
