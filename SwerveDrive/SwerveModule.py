@@ -23,6 +23,9 @@ kModuleMaxAngularAcceleration = math.tau
 class ModuleConstants:
     WHEEL_RADIUS = 0.0
 
+    # value taken from 2024 code
+    RPM_TO_METERS_PER_SECOND_CONVERSION_MULTIPLIER = 7.049382716E-4
+
     # assume all values are untuned unless specified with a date of tuning
     MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = 0.0
     MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = 0.0
@@ -87,13 +90,6 @@ class SwerveModule:
             ModuleConstants.TURN_STATIC_GAIN_VOLTS,
             ModuleConstants.TURN_VELOCITY_GAIN_VOLT_SECONDS_PER_RADIAN
         )
-
-        # Set the distance per pulse for the drive encoder. We can simply use the
-        # distance traveled for one rotation of the wheel divided by the encoder
-        # resolution.
-        self.driveEncoder.setDistancePerPulse(
-            math.tau * kWheelRadius / kEncoderResolution # I have no idea if we need this - zach
-        )
         
         # Limit the PID Controller's input range between -pi and pi and set the input
         # to be continuous.
@@ -105,7 +101,7 @@ class SwerveModule:
         :returns: The current state of the module.
         """
         return wpimath.kinematics.SwerveModuleState(
-            self.driveEncoder.getRate(),
+            self.driveEncoder.getVelocity() * ModuleConstants.RPM_TO_METERS_PER_SECOND_CONVERSION_MULTIPLIER,
             wpimath.geometry.Rotation2d.fromRotations(self.moduleEncoder.get_position()),
         )
 
@@ -124,7 +120,7 @@ class SwerveModule:
     ) -> None:
         """Sets the desired state for the module.
 
-        :param desiredState: Desired state with speed and angle.
+        :param desiredState: Desired state with speed (m/s) and angle (Rotation2D)
         """
 
         encoderRotation = wpimath.geometry.Rotation2d.fromRotations(self.moduleEncoder.get_position())
