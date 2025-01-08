@@ -9,12 +9,13 @@ import wpilib
 import wpimath.geometry
 import wpimath.kinematics
 import SwerveModule
+from phoenix6 import hardware as ctre
 
 kMaxSpeed = 3.0  # 3 meters per second
 kMaxAngularSpeed = math.pi  # 1/2 rotation per second
 
 class DriveConstants:
-    MAX_SPEED_METERS_PER_SECOND = 4.5 # got this number from another team in 2024 season - zach
+    MAX_SPEED_METERS_PER_SECOND = 3.0 # decided on three by converting 4000rpm to mps
     
     # translation values taken from 2024 code
     FRONT_LEFT_LOCATION = wpimath.geometry.Translation2d(0.2635, 0.2635)
@@ -29,12 +30,13 @@ class Drivetrain:
 
     def __init__(self) -> None:
         self.frontLeft = SwerveModule.SwerveModule(0,0,0)
-        self.frontRight = SwerveModule.SwerveModule(0,0,0)
+        self.frontRight = SwerveModule.SwerveModule(0,0,0) # these need CANIDs
         self.backLeft = SwerveModule.SwerveModule(0,0,0)
         self.backRight = SwerveModule.SwerveModule(0,0,0)
-        # edits end here
-        self.gyro = wpilib.AnalogGyro(0)
+        
+        self.gyro = ctre.Pigeon2(0) # this needs a CANID
 
+        # unsure if kinematics is constant so I keep here - zach
         self.kinematics = wpimath.kinematics.SwerveDrive4Kinematics(
             self.frontLeftLocation,
             self.frontRightLocation,
@@ -60,16 +62,12 @@ class Drivetrain:
         xSpeed: float,
         ySpeed: float,
         rot: float,
-        fieldRelative: bool,
-        periodSeconds: float,
     ) -> None:
         """
         Method to drive the robot using joystick info.
         :param xSpeed: Speed of the robot in the x direction (forward).
         :param ySpeed: Speed of the robot in the y direction (sideways).
         :param rot: Angular rate of the robot.
-        :param fieldRelative: Whether the provided x and y speeds are relative to the field.
-        :param periodSeconds: Time
         """
         swerveModuleStates = self.kinematics.toSwerveModuleStates(
             wpimath.kinematics.ChassisSpeeds.discretize(
@@ -77,15 +75,15 @@ class Drivetrain:
                     wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
                         xSpeed, ySpeed, rot, self.gyro.getRotation2d()
                     )
-                    if fieldRelative
-                    else wpimath.kinematics.ChassisSpeeds(xSpeed, ySpeed, rot)
                 ),
                 periodSeconds,
             )
         )
+        
         wpimath.kinematics.SwerveDrive4Kinematics.desaturateWheelSpeeds(
-            swerveModuleStates, kMaxSpeed
+            swerveModuleStates, DriveConstants.MAX_SPEED_METERS_PER_SECOND
         )
+        
         self.frontLeft.setDesiredState(swerveModuleStates[0])
         self.frontRight.setDesiredState(swerveModuleStates[1])
         self.backLeft.setDesiredState(swerveModuleStates[2])
