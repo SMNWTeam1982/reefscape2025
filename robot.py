@@ -2,7 +2,7 @@ import wpilib
 import wpimath
 import rev._rev as rev
 import wpimath.kinematics
-from SwerveDrive import Drive
+from swerve import Drive
 from wpimath.geometry import Rotation2d
 
 
@@ -16,7 +16,7 @@ class MyRobot(wpilib.TimedRobot):
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
-        drive.drive(0.1,0.1,0.0)
+        self.drive.drive(0.1,0.1,0.0,self.getPeriod())
     def testInit(self):
         pass
     def testPeriodic(self):

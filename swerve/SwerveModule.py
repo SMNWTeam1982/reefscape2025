@@ -11,7 +11,7 @@ import wpimath.geometry
 import wpimath.controller
 import wpimath.trajectory
 
-import rev._rev as rev
+import rev
 from phoenix6 import hardware as ctre
 
 class ModuleConstants:
@@ -22,8 +22,8 @@ class ModuleConstants:
     POSITION_TO_METERS_TRAVELED_MULTIPLIER = 0.2855
 
     # assume all values are untuned unless specified with a date of tuning
-    MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = 0.0
-    MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = 0.0
+    MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = 1.0 
+    MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = 1.0
     TURN_PROPORTIONAL_GAIN = 1.0
     TURN_INTEGRAL_GAIN = 0.0
     TURN_DERIVATIVE_GAIN = 0.0
@@ -31,8 +31,8 @@ class ModuleConstants:
     TURN_VELOCITY_GAIN_VOLT_SECONDS_PER_RADIAN = 0.5
 
     # assume all values are untuned unless specified with a date of tuning
-    MAX_VELOCITY_METERS_PER_SECOND = 0.0
-    MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 0.0
+    MAX_VELOCITY_METERS_PER_SECOND = 3.0
+    MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3.0
     DRIVE_PROPORTIONAL_GAIN = 1.0
     DRIVE_INTEGRAL_GAIN = 0.0
     DRIVE_DERIVATIVE_GAIN = 0.0
@@ -41,7 +41,7 @@ class ModuleConstants:
 
     
 
-class SwerveModule:
+class Swerve:
     def __init__(
         self,
         driveMotorCANID: int,
@@ -54,8 +54,8 @@ class SwerveModule:
         :param turningMotorCANID:    CANID of turn motor
         :param turningEncoderCANID:  CANID of the absolute encoder on the module
         """
-        self.driveMotor = rev.CANSparkMax(driveMotorCANID,rev.CANSparkLowLevel.kBrushless)
-        self.turningMotor = rev.CANSparkMax(turningMotorCANID,rev.CANSparkLowLevel.kBrushless)
+        self.driveMotor = rev.CANSparkMax(driveMotorCANID,rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.turningMotor = rev.CANSparkMax(turningMotorCANID,rev.CANSparkLowLevel.MotorType.kBrushless)
 
         # this encoder measures wheel speed and distance traveled
         self.driveEncoder = self.driveMotor.getEncoder()

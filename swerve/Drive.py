@@ -8,7 +8,7 @@ import math
 import wpilib
 import wpimath.geometry
 import wpimath.kinematics
-import SwerveModule
+from . import SwerveModule
 from phoenix6 import hardware as ctre
 
 kMaxSpeed = 3.0  # 3 meters per second
@@ -29,19 +29,20 @@ class Drivetrain:
     """
 
     def __init__(self) -> None:
-        self.frontLeft = SwerveModule.SwerveModule(0,0,0)
-        self.frontRight = SwerveModule.SwerveModule(0,0,0) # these need CANIDs
-        self.backLeft = SwerveModule.SwerveModule(0,0,0)
-        self.backRight = SwerveModule.SwerveModule(0,0,0)
+        self.frontLeft = SwerveModule.Swerve(3,4,2)
+        self.frontRight = SwerveModule.Swerve(5,6,1) # copied from 2024
+        self.backLeft = SwerveModule.Swerve(1,2,3)
+        self.backRight = SwerveModule.Swerve(7,8,4)
         
-        self.gyro = ctre.Pigeon2(0) # this needs a CANID
+        self.gyro = ctre.Pigeon2(0) # copied from 2024
 
         # unsure if kinematics is constant so I keep here - zach
+        # took me far too long to figure you were using the wrong constants - kay
         self.kinematics = wpimath.kinematics.SwerveDrive4Kinematics(
-            self.frontLeftLocation,
-            self.frontRightLocation,
-            self.backLeftLocation,
-            self.backRightLocation,
+            DriveConstants.FRONT_LEFT_LOCATION,
+            DriveConstants.FRONT_RIGHT_LOCATION,
+            DriveConstants.BACK_LEFT_LOCATION,
+            DriveConstants.BACK_RIGHT_LOCATION,
         )
 
         self.odometry = wpimath.kinematics.SwerveDrive4Odometry(
@@ -61,7 +62,8 @@ class Drivetrain:
         self,
         xSpeed: float,
         ySpeed: float,
-        rot: float,
+        rotation: float,
+        periodSeconds: float
     ) -> None:
         """
         Method to drive the robot using joystick info.
@@ -73,7 +75,7 @@ class Drivetrain:
             wpimath.kinematics.ChassisSpeeds.discretize(
                 (
                     wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, rot, self.gyro.getRotation2d()
+                        xSpeed, ySpeed, rotation, self.gyro.getRotation2d()
                     )
                 ),
                 periodSeconds,
