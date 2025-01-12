@@ -41,7 +41,7 @@ class ModuleConstants:
 
     
 
-class Swerve:
+class Wheel:
     def __init__(
         self,
         driveMotorCANID: int,
