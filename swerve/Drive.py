@@ -29,10 +29,10 @@ class Drivetrain:
     """
 
     def __init__(self) -> None:
-        self.frontLeft = SwerveModule.Swerve(3,4,2)
-        self.frontRight = SwerveModule.Swerve(5,6,1) # copied from 2024
-        self.backLeft = SwerveModule.Swerve(1,2,3)
-        self.backRight = SwerveModule.Swerve(7,8,4)
+        self.frontLeft = SwerveModule.Wheel(3,4,2)
+        self.frontRight = SwerveModule.Wheel(5,6,1) # copied from 2024
+        self.backLeft = SwerveModule.Wheel(1,2,3)
+        self.backRight = SwerveModule.Wheel(7,8,4)
         
         self.gyro = ctre.Pigeon2(0) # copied from 2024
 
