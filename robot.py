@@ -1,10 +1,6 @@
 import wpilib
-import wpimath
-import rev._rev as rev
 import wpimath.kinematics
 from swerve import Drive
-from wpimath.geometry import Rotation2d
-
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):

@@ -106,8 +106,8 @@ class Wheel:
         :returns: The current position of the module.
         """
         return wpimath.kinematics.SwerveModulePosition(
-            self.driveEncoder.getDistance() * ModuleConstants.POSITION_TO_METERS_TRAVELED_MULTIPLIER,
-            wpimath.geometry.Rotation2d.fromRotations(self.moduleEncoder.get_position()),
+            self.driveEncoder.getPosition() * ModuleConstants.POSITION_TO_METERS_TRAVELED_MULTIPLIER,
+            wpimath.geometry.Rotation2d.fromRotations(self.moduleEncoder.get_position().value),
         )
 
     def setDesiredState(
@@ -118,7 +118,7 @@ class Wheel:
         :param desiredState: Desired state with speed (m/s) and angle (Rotation2D)
         """
 
-        encoderRotation = wpimath.geometry.Rotation2d.fromRotations(self.moduleEncoder.get_position())
+        encoderRotation = wpimath.geometry.Rotation2d.fromRotations(self.moduleEncoder.get_position().value)
 
         # Optimize the reference state to avoid spinning further than 90 degrees
         state = wpimath.kinematics.SwerveModuleState.optimize(
@@ -133,7 +133,7 @@ class Wheel:
 
         # Calculate the drive output from the drive PID controller. this will be added to the FF voltage
         driveOutput = self.drivePIDController.calculate(
-            self.driveEncoder.getRate(), state.speed
+            self.driveEncoder.getVelocity(), state.speed
         )
 
         driveFeedforward = self.driveFeedforward.calculate(state.speed)
@@ -144,7 +144,7 @@ class Wheel:
         )
 
         turnFeedforward = self.turnFeedforward.calculate(
-            self.turningPIDController.getSetpoint().velocity # get the motor to move
+            self.turningPIDController.getSetpoint() # get the motor to move
         )
 
         self.driveMotor.setVoltage(driveOutput + driveFeedforward) # both of these are in Volts

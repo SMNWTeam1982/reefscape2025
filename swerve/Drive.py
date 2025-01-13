@@ -34,7 +34,7 @@ class Drivetrain:
         self.backLeft = SwerveModule.Wheel(1,2,3)
         self.backRight = SwerveModule.Wheel(7,8,4)
         
-        self.gyro = ctre.Pigeon2(0) # copied from 2024
+        self.gyro = ctre.pigeon2.Pigeon2(0) # copied from 2024
 
         # unsure if kinematics is constant so I keep here - zach
         # took me far too long to figure you were using the wrong constants - kay
@@ -47,7 +47,7 @@ class Drivetrain:
 
         self.odometry = wpimath.kinematics.SwerveDrive4Odometry(
             self.kinematics,
-            self.gyro.getRotation2d(),
+            wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value),
             (
                 self.frontLeft.getPosition(),
                 self.frontRight.getPosition(),
@@ -56,7 +56,7 @@ class Drivetrain:
             ),
         )
 
-        self.gyro.reset()
+        self.gyro.set_yaw(0)
 
     def drive(
         self,
@@ -75,7 +75,7 @@ class Drivetrain:
             wpimath.kinematics.ChassisSpeeds.discretize(
                 (
                     wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, rotation, self.gyro.getRotation2d()
+                        xSpeed, ySpeed, rotation, wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value)
                     )
                 ),
                 periodSeconds,
@@ -94,7 +94,7 @@ class Drivetrain:
     def updateOdometry(self) -> None:
         """Updates the field relative position of the robot."""
         self.odometry.update(
-            self.gyro.getRotation2d(),
+            wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value),
             (
                 self.frontLeft.getPosition(),
                 self.frontRight.getPosition(),
