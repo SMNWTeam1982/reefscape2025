@@ -115,7 +115,7 @@ class Drivetrain:
                 self.backRight.getPosition().angle.degrees(),
                 
             )
-        
+        )
 
     def displayTelemetry(self) -> None:
         SmartDashboard.putNumberArray(
@@ -126,4 +126,4 @@ class Drivetrain:
                     
                 )
             
-                )
+                
