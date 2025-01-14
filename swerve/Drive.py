@@ -113,5 +113,17 @@ class Drivetrain:
                 self.frontRight.getPosition().angle.degrees(),
                 self.backLeft.getPosition().angle.degrees(),
                 self.backRight.getPosition().angle.degrees(),
+                
             )
-        )
+        
+
+    def displayTelemetry(self) -> None:
+        SmartDashboard.putNumberArray(
+                "Swerve module angles",
+                (
+                    
+                    self.gyro.get_yaw().value,
+                    
+                )
+            
+                )
