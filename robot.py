@@ -5,6 +5,8 @@ from swerve import Drive
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.drive = Drive.Drivetrain()
+    def robotPeriodic(self):
+        self.drive.displayTelemetry()
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):

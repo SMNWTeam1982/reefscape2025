@@ -11,6 +11,8 @@ import wpimath.kinematics
 from . import SwerveModule
 from phoenix6 import hardware as ctre
 
+from wpilib import SmartDashboard
+
 kMaxSpeed = 3.0  # 3 meters per second
 kMaxAngularSpeed = math.pi  # 1/2 rotation per second
 
@@ -101,4 +103,15 @@ class Drivetrain:
                 self.backLeft.getPosition(),
                 self.backRight.getPosition(),
             ),
+        )
+    
+    def displayTelemetry(self) -> None:
+        SmartDashboard.putNumberArray(
+            "Swerve module angles",
+            (
+                self.frontLeft.getPosition().angle.degrees(),
+                self.frontRight.getPosition().angle.degrees(),
+                self.backLeft.getPosition().angle.degrees(),
+                self.backRight.getPosition().angle.degrees(),
+            )
         )
