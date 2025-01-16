@@ -11,9 +11,9 @@ class MyRobot(wpilib.TimedRobot):
         self.drive.displayTelemetry()
 
         if self.driveController.getAButton():
-            self.drive.displayPID()
+            self.drive.displayTurnPID()
         if self.driveController.getBButton():
-            self.drive.updatePIDs()
+            self.drive.updateTurnPIDs()
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
