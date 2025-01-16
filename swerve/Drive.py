@@ -106,12 +106,25 @@ class Drivetrain:
         )
     
     def displayTelemetry(self) -> None:
-        SmartDashboard.putNumberArray(
-            "Swerve module angles",
-            (
-                self.frontLeft.getPosition().angle.degrees(),
-                self.frontRight.getPosition().angle.degrees(),
-                self.backLeft.getPosition().angle.degrees(),
-                self.backRight.getPosition().angle.degrees(),
-            )
-        )
+        SmartDashboard.putNumber("gyro angle",self.gyro.get_yaw().value)
+
+        SmartDashboard.putNumber("front left angle",self.frontLeft.turningPIDController.getPositionError())# self.frontLeft.getPosition().angle.degrees())
+        SmartDashboard.putNumber("front right angle",self.frontRight.turningPIDController.getPositionError())# self.frontRight.getPosition().angle.degrees())
+        SmartDashboard.putNumber("back left angle",self.backLeft.turningPIDController.getPositionError())# self.backLeft.getPosition().angle.degrees())
+        SmartDashboard.putNumber("back right angle",self.backRight.turningPIDController.getPositionError())# self.backRight.getPosition().angle.degrees())
+
+    def displayPID(self):
+        SmartDashboard.putNumber("p",self.frontLeft.turningPIDController.getP())
+        SmartDashboard.putNumber("i",self.frontLeft.turningPIDController.getI())
+        SmartDashboard.putNumber("d",self.frontLeft.turningPIDController.getD())
+    
+    def updatePIDs(self):
+        p = SmartDashboard.getNumber("p",self.frontLeft.turningPIDController.getP())
+        i = SmartDashboard.getNumber("i",self.frontLeft.turningPIDController.getI())
+        d = SmartDashboard.getNumber("d",self.frontLeft.turningPIDController.getD())
+
+        self.frontLeft.updatePID(p,i,d)
+        self.frontRight.updatePID(p,i,d)
+        self.backLeft.updatePID(p,i,d)
+        self.backRight.updatePID(p,i,d)
+

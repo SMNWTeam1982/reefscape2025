@@ -24,7 +24,7 @@ class ModuleConstants:
     # assume all values are untuned unless specified with a date of tuning
     MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = 1.0 
     MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = 1.0
-    TURN_PROPORTIONAL_GAIN = 1.0
+    TURN_PROPORTIONAL_GAIN = 0.1
     TURN_INTEGRAL_GAIN = 0.0
     TURN_DERIVATIVE_GAIN = 0.0
     TURN_STATIC_GAIN_VOLTS = 1.0
@@ -81,10 +81,6 @@ class Wheel:
             ModuleConstants.DRIVE_STATIC_GAIN_VOLTS,
             ModuleConstants.DRIVE_VELOCITY_GAIN_VOLT_SECONDS_PER_METER
         )
-        self.turnFeedforward = wpimath.controller.SimpleMotorFeedforwardRadians(
-            ModuleConstants.TURN_STATIC_GAIN_VOLTS,
-            ModuleConstants.TURN_VELOCITY_GAIN_VOLT_SECONDS_PER_RADIAN
-        )
         
         # Limit the PID Controller's input range between -pi and pi and set the input
         # to be continuous.
@@ -129,7 +125,7 @@ class Wheel:
         # direction of travel that can occur when modules change directions. This results in smoother
         # driving.
         # this equation returns the cos of the angle between state.angle and encoderRotation
-        state.speed *= state.angle.cos() * encoderRotation.cos() + state.angle.sin() * encoderRotation.sin() 
+        state.speed *= state.angle.cos() * encoderRotation.cos() + state.angle.sin() * encoderRotation.sin()
 
         # Calculate the drive output from the drive PID controller. this will be added to the FF voltage
         driveOutput = self.drivePIDController.calculate(
@@ -143,9 +139,13 @@ class Wheel:
             encoderRotation.radians(), state.angle.radians()
         )
 
-        turnFeedforward = self.turnFeedforward.calculate(
-            self.turningPIDController.getSetpoint() # get the motor to move
-        )
+        if turnOutput > 1.0:
+            turnOutput = 1.0
+        if turnOutput < -1.0:
+            turnOutput = -1.0
 
-        self.driveMotor.setVoltage(driveOutput + driveFeedforward) # both of these are in Volts
-        self.turningMotor.setVoltage(turnOutput + turnFeedforward) # both of these are in Volts
+        self.driveMotor.setVoltage((driveOutput*0 + driveFeedforward) * 3) # both of these are in Volts
+        self.turningMotor.set(-turnOutput)
+
+    def updatePID(self, p: float, i: float, d: float):
+        self.turningPIDController.setPID(p,i,d)
