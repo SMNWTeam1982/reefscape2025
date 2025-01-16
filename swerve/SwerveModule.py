@@ -33,7 +33,7 @@ class ModuleConstants:
     # assume all values are untuned unless specified with a date of tuning
     MAX_VELOCITY_METERS_PER_SECOND = 3.0
     MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3.0
-    DRIVE_PROPORTIONAL_GAIN = 1.0
+    DRIVE_PROPORTIONAL_GAIN = 0.1
     DRIVE_INTEGRAL_GAIN = 0.0
     DRIVE_DERIVATIVE_GAIN = 0.0
     DRIVE_STATIC_GAIN_VOLTS = 1.0
@@ -67,7 +67,7 @@ class Wheel:
             ModuleConstants.DRIVE_PROPORTIONAL_GAIN, # should only need this one others can be 0
             ModuleConstants.DRIVE_INTEGRAL_GAIN,
             ModuleConstants.DRIVE_DERIVATIVE_GAIN,
-        )
+        ) # this controller outputs an amount to change the voltage by, this doesn't control the motor
 
         # get the wheel to snap quickly to where you want
         self.turningPIDController = wpimath.controller.PIDController(
@@ -78,7 +78,9 @@ class Wheel:
         
         # idk what these do, something to do with speed - zach
         self.driveFeedforward = wpimath.controller.SimpleMotorFeedforwardMeters(
-            ModuleConstants.DRIVE_STATIC_GAIN_VOLTS,
+            ModuleConstants.DRIVE_STATIC_GAIN_VOLTS, # minimum voltage needed to move
+            
+            # voltage/velocity, get average between different constant voltages and velocity measurements
             ModuleConstants.DRIVE_VELOCITY_GAIN_VOLT_SECONDS_PER_METER
         )
         
@@ -138,14 +140,15 @@ class Wheel:
         turnOutput = self.turningPIDController.calculate(
             encoderRotation.radians(), state.angle.radians()
         )
-
+        
         if turnOutput > 1.0:
             turnOutput = 1.0
         if turnOutput < -1.0:
             turnOutput = -1.0
 
-        self.driveMotor.setVoltage((driveOutput*0 + driveFeedforward) * 3) # both of these are in Volts
-        self.turningMotor.set(-turnOutput)
+        # temporarily disable the feedback control for the sake of testing
+        self.driveMotor.setVoltage((driveOutput*0 + driveFeedforward) * 0) # both of these are in Volts
+        self.turningMotor.set(-turnOutput) # use percent for turning
 
     def updatePID(self, p: float, i: float, d: float):
         self.turningPIDController.setPID(p,i,d)
