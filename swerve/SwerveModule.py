@@ -150,5 +150,5 @@ class Wheel:
         self.driveMotor.setVoltage((driveOutput*0 + driveFeedforward) * 0) # both of these are in Volts
         self.turningMotor.set(-turnOutput) # use percent for turning
 
-    def updatePID(self, p: float, i: float, d: float):
+    def updateTurnPID(self, p: float, i: float, d: float):
         self.turningPIDController.setPID(p,i,d)
