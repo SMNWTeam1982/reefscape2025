@@ -108,22 +108,29 @@ class Drivetrain:
     def displayTelemetry(self) -> None:
         SmartDashboard.putNumber("gyro angle",self.gyro.get_yaw().value)
 
-        SmartDashboard.putNumber("front left angle",self.frontLeft.turningPIDController.getPositionError())# self.frontLeft.getPosition().angle.degrees())
-        SmartDashboard.putNumber("front right angle",self.frontRight.turningPIDController.getPositionError())# self.frontRight.getPosition().angle.degrees())
-        SmartDashboard.putNumber("back left angle",self.backLeft.turningPIDController.getPositionError())# self.backLeft.getPosition().angle.degrees())
-        SmartDashboard.putNumber("back right angle",self.backRight.turningPIDController.getPositionError())# self.backRight.getPosition().angle.degrees())
-
-    def displayPID(self):
+        SmartDashboard.putNumber("front left angle error",self.frontLeft.turningPIDController.getPositionError())# self.frontLeft.getPosition().angle.degrees())
+        SmartDashboard.putNumber("front left velocity error",self.frontLeft.drivePIDController.getPositionError())
+        
+        SmartDashboard.putNumber("front right angle error",self.frontRight.turningPIDController.getPositionError())# self.frontRight.getPosition().angle.degrees())
+        SmartDashboard.putNumber("front right velocity error",self.frontRight.drivePIDController.getPositionError())
+        
+        SmartDashboard.putNumber("back left angle error",self.backLeft.turningPIDController.getPositionError())# self.backLeft.getPosition().angle.degrees())
+        SmartDashboard.putNumber("back left velocity error",self.backLeft.drivePIDController.getPositionError())
+        
+        SmartDashboard.putNumber("back right angle error",self.backRight.turningPIDController.getPositionError())# self.backRight.getPosition().angle.degrees())
+        SmartDashboard.putNumber("back right velocity error",self.backRight.drivePIDController.getPositionError())
+        
+    def displayTurnPID(self):
         SmartDashboard.putNumber("p",self.frontLeft.turningPIDController.getP())
         SmartDashboard.putNumber("i",self.frontLeft.turningPIDController.getI())
         SmartDashboard.putNumber("d",self.frontLeft.turningPIDController.getD())
     
-    def updatePIDs(self):
+    def updateTurnPIDs(self):
         p = SmartDashboard.getNumber("p",self.frontLeft.turningPIDController.getP())
         i = SmartDashboard.getNumber("i",self.frontLeft.turningPIDController.getI())
         d = SmartDashboard.getNumber("d",self.frontLeft.turningPIDController.getD())
 
-        self.frontLeft.updatePID(p,i,d)
-        self.frontRight.updatePID(p,i,d)
-        self.backLeft.updatePID(p,i,d)
-        self.backRight.updatePID(p,i,d)
+        self.frontLeft.updateTurnPID(p,i,d)
+        self.frontRight.updateTurnPID(p,i,d)
+        self.backLeft.updateTurnPID(p,i,d)
+        self.backRight.updateTurnPID(p,i,d)
