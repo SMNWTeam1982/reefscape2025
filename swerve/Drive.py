@@ -3,7 +3,7 @@
 # Open Source Software; you can modify and/or share it under the terms of
 # the WPILib BSD license file in the root directory of this project.
 #
-
+import wpimath.units
 import math
 import wpilib
 import wpimath.geometry
@@ -109,17 +109,37 @@ class Drivetrain:
         SmartDashboard.putNumber("gyro angle",self.gyro.get_yaw().value)
 
         SmartDashboard.putNumber("front left angle error",self.frontLeft.turningPIDController.getPositionError())# self.frontLeft.getPosition().angle.degrees())
-        SmartDashboard.putNumber("front left velocity error",self.frontLeft.drivePIDController.getPositionError())
+        #SmartDashboard.putNumber("front left velocity error",self.frontLeft.drivePIDController.getPositionError())
         
         SmartDashboard.putNumber("front right angle error",self.frontRight.turningPIDController.getPositionError())# self.frontRight.getPosition().angle.degrees())
-        SmartDashboard.putNumber("front right velocity error",self.frontRight.drivePIDController.getPositionError())
+        #SmartDashboard.putNumber("front right velocity error",self.frontRight.drivePIDController.getPositionError())
         
         SmartDashboard.putNumber("back left angle error",self.backLeft.turningPIDController.getPositionError())# self.backLeft.getPosition().angle.degrees())
-        SmartDashboard.putNumber("back left velocity error",self.backLeft.drivePIDController.getPositionError())
+        #SmartDashboard.putNumber("back left velocity error",self.backLeft.drivePIDController.getPositionError())
         
         SmartDashboard.putNumber("back right angle error",self.backRight.turningPIDController.getPositionError())# self.backRight.getPosition().angle.degrees())
-        SmartDashboard.putNumber("back right velocity error",self.backRight.drivePIDController.getPositionError())
+        #SmartDashboard.putNumber("back right velocity error",self.backRight.drivePIDController.getPositionError())
+
+        SmartDashboard.putNumberArray(
+            "velocity errors",
+            [
+                self.frontLeft.drivePIDController.getPositionError(),
+                self.frontRight.drivePIDController.getPositionError(),
+                self.backLeft.drivePIDController.getPositionError(),
+                self.backRight.drivePIDController.getPositionError()
+            ]
+        )
         
+        SmartDashboard.putNumberArray(
+            "velocities",
+            [
+                self.frontLeft.getState().speed,
+                self.frontRight.getState().speed,
+                self.backLeft.getState().speed,
+                self.backRight.getState().speed
+            ]
+        )
+
     def displayTurnPID(self):
         SmartDashboard.putNumber("p",self.frontLeft.turningPIDController.getP())
         SmartDashboard.putNumber("i",self.frontLeft.turningPIDController.getI())
@@ -134,3 +154,27 @@ class Drivetrain:
         self.frontRight.updateTurnPID(p,i,d)
         self.backLeft.updateTurnPID(p,i,d)
         self.backRight.updateTurnPID(p,i,d)
+    def displayDrivePID(self):
+        SmartDashboard.getNumber("p",self.frontLeft.drivePIDController.getP())
+        SmartDashboard.getNumber("i",self.frontLeft.drivePIDController.getI())
+        SmartDashboard.getNumber("d",self.frontLeft.drivePIDController.getD())
+
+    def updateDrivePIDs(self):
+        p = SmartDashboard.getNumber("p",self.frontLeft.drivePIDController.getP())
+        i = SmartDashboard.getNumber("i",self.frontLeft.drivePIDController.getI())
+        d = SmartDashboard.getNumber("d",self.frontLeft.drivePIDController.getD())
+
+        self.frontLeft.updateDrivePID(p,i,d)
+        self.frontRight.updateDrivePID(p,i,d)
+        self.backLeft.updateDrivePID(p,i,d)
+        self.backRight.updateDrivePID(p,i,d)
+    
+    def displayVoltage(self):
+        SmartDashboard.putNumber("drive voltage",self.frontLeft.voltage)
+
+    def updateVoltage(self):
+        voltage = SmartDashboard.getNumber("drive voltage", self.frontLeft.voltage)
+        self.frontLeft.updateVoltage(voltage)
+        self.frontRight.updateVoltage(voltage)
+        self.backLeft.updateVoltage(voltage)
+        self.backRight.updateVoltage(voltage)

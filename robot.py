@@ -11,9 +11,11 @@ class MyRobot(wpilib.TimedRobot):
         self.drive.displayTelemetry()
 
         if self.driveController.getAButton():
-            self.drive.displayTurnPID()
+            self.drive.displayDrivePID()
+            self.drive.displayVoltage()
         if self.driveController.getBButton():
-            self.drive.updateTurnPIDs()
+            self.drive.updateDrivePIDs()
+            self.drive.updateVoltage()
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
@@ -21,7 +23,7 @@ class MyRobot(wpilib.TimedRobot):
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
-        x = self.driveController.getLeftX()
+        x = -self.driveController.getLeftX()
         y = self.driveController.getLeftY()
         turn = self.driveController.getRightX()
 
@@ -32,9 +34,10 @@ class MyRobot(wpilib.TimedRobot):
             self.getPeriod()
         )
     
-    def deadzone(num: float) -> float:
-        if num.__abs__() < 0.05:
+    def deadzone(self, num: float) -> float:
+        if abs(num) < 0.05:
             return 0.0
+        return num
 
     def testInit(self):
         pass

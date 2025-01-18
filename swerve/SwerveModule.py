@@ -22,13 +22,9 @@ class ModuleConstants:
     POSITION_TO_METERS_TRAVELED_MULTIPLIER = 0.2855
 
     # assume all values are untuned unless specified with a date of tuning
-    MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND = 1.0 
-    MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = 1.0
-    TURN_PROPORTIONAL_GAIN = 0.1
-    TURN_INTEGRAL_GAIN = 0.0
-    TURN_DERIVATIVE_GAIN = 0.0
-    TURN_STATIC_GAIN_VOLTS = 1.0
-    TURN_VELOCITY_GAIN_VOLT_SECONDS_PER_RADIAN = 0.5
+    TURN_PROPORTIONAL_GAIN = 0.73 # Jan 18 2025
+    TURN_INTEGRAL_GAIN = 0.0 # Jan 18 2025
+    TURN_DERIVATIVE_GAIN = 0.01 # Jan 18 2025
 
     # assume all values are untuned unless specified with a date of tuning
     MAX_VELOCITY_METERS_PER_SECOND = 3.0
@@ -56,6 +52,9 @@ class Wheel:
         """
         self.driveMotor = rev.CANSparkMax(driveMotorCANID,rev.CANSparkLowLevel.MotorType.kBrushless)
         self.turningMotor = rev.CANSparkMax(turningMotorCANID,rev.CANSparkLowLevel.MotorType.kBrushless)
+
+        self.voltage = 0.0
+        self.driveMode = "manual"
 
         # this encoder measures wheel speed and distance traveled
         self.driveEncoder = self.driveMotor.getEncoder()
@@ -95,7 +94,7 @@ class Wheel:
         """
         return wpimath.kinematics.SwerveModuleState(
             self.driveEncoder.getVelocity() * ModuleConstants.RPM_TO_METERS_PER_SECOND_CONVERSION_MULTIPLIER,
-            wpimath.geometry.Rotation2d.fromRotations(self.moduleEncoder.get_position()),
+            wpimath.geometry.Rotation2d.fromRotations(self.moduleEncoder.get_position().value),
         )
 
     def getPosition(self) -> wpimath.kinematics.SwerveModulePosition:
@@ -146,9 +145,20 @@ class Wheel:
         if turnOutput < -1.0:
             turnOutput = -1.0
 
-        # temporarily disable the feedback control for the sake of testing
-        self.driveMotor.setVoltage((driveOutput*0 + driveFeedforward) * 0) # both of these are in Volts
+        if self.driveMode == "manual":
+            self.driveMotor.setVoltage( math.copysign(self.voltage, state.speed))
+        elif self.driveMode == "auto":
+            self.driveMotor.setVoltage( math.copysign(driveOutput + driveFeedforward, state.speed) ) # both of these are in Volts
+        else:
+            self.driveMotor.setVoltage(0.0)
+
         self.turningMotor.set(-turnOutput) # use percent for turning
 
     def updateTurnPID(self, p: float, i: float, d: float):
         self.turningPIDController.setPID(p,i,d)
+    
+    def updateDrivePID(self, p: float, i: float, d: float):
+        self.drivePIDController.setPID(p,i,d)
+    
+    def updateVoltage(self,voltage: float):
+        self.voltage = voltage
