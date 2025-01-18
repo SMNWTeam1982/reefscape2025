@@ -3,10 +3,10 @@ import wpilib
 import wpimath.kinematics
 import wpimath
 from swerve import Drive
-from photonlibpy import PhotonCamera, PhotonPoseEstimator, PoseStrategy
-from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
+# from photonlibpy.photonPoseEstimator import PoseStrategy
+# from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
-// this value needs to be adjusted for the actual robot
+# this value needs to be adjusted for the actual robot
 kRobotToCam = wpimath.geometry.Transform3d(
     wpimath.geometry.Translation3d(.5, 0, .5),
     wpimath.geometry.Rotation3d.fromDegrees(0, -30, 0)
@@ -17,17 +17,17 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.drive = Drive.Drivetrain()
         self.driveController = wpilib.XboxController(0)
-        self.cam = PhotonCamera("Camera_Module_v1")
-        self.camPoseEst = PhotonPoseEstimator(
-            AprilTagFieldLayout.loadField(AprilTagField.kDefaultField),
-            PoseStrategy.LOWEST_AMBIGUITY,
-            self.cam,
-            kRobotToCam,
-        )
+#        self.cam = PhotonCamera("Camera_Module_v1")
+#        self.camPoseEst = PhotonPoseEstimator(
+#            AprilTagFieldLayout.loadField(AprilTagField.kDefaultField),
+#            PoseStrategy.LOWEST_AMBIGUITY,
+#            self.cam,
+#            kRobotToCam,
+#        )
     def robotPeriodic(self):
-        camEstPose = self.camPoseEst.update()
+#        camEstPose = self.camPoseEst.update()
 
-        update pose with this (probably doesnt work)
+        # update pose with this (probably doesnt work)
         # if camEstPose:
         #     self.drive.addVisionPoseEstimate(
         #             camEstPose.estimatedPos, camEstPose.timestampSeconds
@@ -38,10 +38,8 @@ class MyRobot(wpilib.TimedRobot):
 
         if self.driveController.getAButton():
             self.drive.displayDrivePID()
-            self.drive.displayVoltage()
         if self.driveController.getBButton():
             self.drive.updateDrivePIDs()
-            self.drive.updateVoltage()
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):

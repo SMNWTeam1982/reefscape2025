@@ -13,11 +13,8 @@ from phoenix6 import hardware as ctre
 
 from wpilib import SmartDashboard
 
-kMaxSpeed = 3.0  # 3 meters per second
-kMaxAngularSpeed = math.pi  # 1/2 rotation per second
-
 class DriveConstants:
-    MAX_SPEED_METERS_PER_SECOND = 3.0 # decided on three by converting 4000rpm to mps
+    MAX_SPEED_METERS_PER_SECOND = 3.8 # speed at 12 Volts, Jan 18 2025
     
     # translation values taken from 2024 code
     FRONT_LEFT_LOCATION = wpimath.geometry.Translation2d(0.2635, 0.2635)
@@ -93,6 +90,16 @@ class Drivetrain:
         self.backLeft.setDesiredState(swerveModuleStates[2])
         self.backRight.setDesiredState(swerveModuleStates[3])
 
+        SmartDashboard.putNumberArray(
+            "Desired Module States",
+            [
+                swerveModuleStates[0].angle.radians(),swerveModuleStates[0].speed,
+                swerveModuleStates[1].angle.radians(),swerveModuleStates[1].speed,
+                swerveModuleStates[2].angle.radians(),swerveModuleStates[2].speed,
+                swerveModuleStates[3].angle.radians(),swerveModuleStates[3].speed
+            ]
+        )
+
     def updateOdometry(self) -> None:
         """Updates the field relative position of the robot."""
         self.odometry.update(
@@ -106,7 +113,7 @@ class Drivetrain:
         )
     
     def displayTelemetry(self) -> None:
-        SmartDashboard.putNumber("gyro angle",self.gyro.get_yaw().value)
+        SmartDashboard.putNumber("gyro angle",math.radians(self.gyro.get_yaw().value))
 
         SmartDashboard.putNumber("front left angle error",self.frontLeft.turningPIDController.getPositionError())# self.frontLeft.getPosition().angle.degrees())
         #SmartDashboard.putNumber("front left velocity error",self.frontLeft.drivePIDController.getPositionError())
@@ -119,6 +126,33 @@ class Drivetrain:
         
         SmartDashboard.putNumber("back right angle error",self.backRight.turningPIDController.getPositionError())# self.backRight.getPosition().angle.degrees())
         #SmartDashboard.putNumber("back right velocity error",self.backRight.drivePIDController.getPositionError())
+        
+        moduleStates = [
+            self.frontLeft.getState(),
+            self.frontRight.getState(),
+            self.backLeft.getState(),
+            self.backRight.getState()
+        ]
+
+        SmartDashboard.putNumberArray(
+            "Module States",
+            [
+                moduleStates[0].angle.radians(),moduleStates[0].speed,
+                moduleStates[1].angle.radians(),moduleStates[1].speed,
+                moduleStates[2].angle.radians(),moduleStates[2].speed,
+                moduleStates[3].angle.radians(),moduleStates[3].speed
+            ]
+        )
+
+        # SmartDashboard.putData(
+        #     "module positions",
+        #     [
+        #         self.frontLeft.getPosition(),
+        #         self.frontRight.getPosition(),
+        #         self.backLeft.getPosition(),
+        #         self.backRight.getPosition()
+        #     ]
+        # )
 
         SmartDashboard.putNumberArray(
             "velocity errors",
@@ -168,13 +202,3 @@ class Drivetrain:
         self.frontRight.updateDrivePID(p,i,d)
         self.backLeft.updateDrivePID(p,i,d)
         self.backRight.updateDrivePID(p,i,d)
-    
-    def displayVoltage(self):
-        SmartDashboard.putNumber("drive voltage",self.frontLeft.voltage)
-
-    def updateVoltage(self):
-        voltage = SmartDashboard.getNumber("drive voltage", self.frontLeft.voltage)
-        self.frontLeft.updateVoltage(voltage)
-        self.frontRight.updateVoltage(voltage)
-        self.backLeft.updateVoltage(voltage)
-        self.backRight.updateVoltage(voltage)

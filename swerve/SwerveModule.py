@@ -15,25 +15,23 @@ import rev
 from phoenix6 import hardware as ctre
 
 class ModuleConstants:
-    WHEEL_RADIUS = 0.0
-
     # value taken from 2024 code
     RPM_TO_METERS_PER_SECOND_CONVERSION_MULTIPLIER = 7.049382716E-4
     POSITION_TO_METERS_TRAVELED_MULTIPLIER = 0.2855
 
     # assume all values are untuned unless specified with a date of tuning
-    TURN_PROPORTIONAL_GAIN = 0.73 # Jan 18 2025
+    TURN_PROPORTIONAL_GAIN = 0.73 *2 # Jan 18 2025
     TURN_INTEGRAL_GAIN = 0.0 # Jan 18 2025
-    TURN_DERIVATIVE_GAIN = 0.01 # Jan 18 2025
+    TURN_DERIVATIVE_GAIN = 0.01 *2 # Jan 18 2025
 
     # assume all values are untuned unless specified with a date of tuning
     MAX_VELOCITY_METERS_PER_SECOND = 3.0
     MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3.0
-    DRIVE_PROPORTIONAL_GAIN = 0.1
+    DRIVE_PROPORTIONAL_GAIN = 0.00
     DRIVE_INTEGRAL_GAIN = 0.0
     DRIVE_DERIVATIVE_GAIN = 0.0
-    DRIVE_STATIC_GAIN_VOLTS = 1.0
-    DRIVE_VELOCITY_GAIN_VOLT_SECONDS_PER_METER = 0.5
+    DRIVE_STATIC_GAIN_VOLTS = 0.05
+    DRIVE_VELOCITY_GAIN_VOLT_SECONDS_PER_METER = 2.87 # Jan 18 2025
 
     
 
@@ -52,9 +50,6 @@ class Wheel:
         """
         self.driveMotor = rev.CANSparkMax(driveMotorCANID,rev.CANSparkLowLevel.MotorType.kBrushless)
         self.turningMotor = rev.CANSparkMax(turningMotorCANID,rev.CANSparkLowLevel.MotorType.kBrushless)
-
-        self.voltage = 0.0
-        self.driveMode = "manual"
 
         # this encoder measures wheel speed and distance traveled
         self.driveEncoder = self.driveMotor.getEncoder()
@@ -75,7 +70,6 @@ class Wheel:
             ModuleConstants.DRIVE_DERIVATIVE_GAIN # tune only with small changes at a time
         )
         
-        # idk what these do, something to do with speed - zach
         self.driveFeedforward = wpimath.controller.SimpleMotorFeedforwardMeters(
             ModuleConstants.DRIVE_STATIC_GAIN_VOLTS, # minimum voltage needed to move
             
@@ -133,7 +127,7 @@ class Wheel:
             self.driveEncoder.getVelocity(), state.speed
         )
 
-        driveFeedforward = self.driveFeedforward.calculate(state.speed)
+        driveFeedforward = self.driveFeedforward.calculate(state.speed) # converts mps to volts
 
         # Calculate the turning motor output from the turning PID controller.
         turnOutput = self.turningPIDController.calculate(
@@ -145,12 +139,7 @@ class Wheel:
         if turnOutput < -1.0:
             turnOutput = -1.0
 
-        if self.driveMode == "manual":
-            self.driveMotor.setVoltage( math.copysign(self.voltage, state.speed))
-        elif self.driveMode == "auto":
-            self.driveMotor.setVoltage( math.copysign(driveOutput + driveFeedforward, state.speed) ) # both of these are in Volts
-        else:
-            self.driveMotor.setVoltage(0.0)
+        self.driveMotor.setVoltage( driveOutput + driveFeedforward ) # Volts because of feedforward
 
         self.turningMotor.set(-turnOutput) # use percent for turning
 
@@ -159,6 +148,3 @@ class Wheel:
     
     def updateDrivePID(self, p: float, i: float, d: float):
         self.drivePIDController.setPID(p,i,d)
-    
-    def updateVoltage(self,voltage: float):
-        self.voltage = voltage
