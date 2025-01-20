@@ -57,6 +57,13 @@ class Drivetrain:
 
         self.gyro.set_yaw(0)
 
+    def driveWithChassisSpeeds(self,speeds: wpimath.kinematics.ChassisSpeeds):
+        self.drive(
+            speeds.vx,
+            speeds.vy,
+            speeds.omega
+        )
+
     def drive(
         self,
         xSpeed: float,
@@ -111,6 +118,19 @@ class Drivetrain:
                 self.backRight.getPosition(),
             ),
         )
+    
+    def getPose(self) -> wpimath.geometry.Pose2d:
+        return wpimath.geometry.Pose2d() # we will get the robot pose from vision
+    def resetPose(self,pose: wpimath.geometry.Pose2d):
+        pass # we will use this when we get vision up
+    def getRelativeSpeeds(self) -> wpimath.kinematics.ChassisSpeeds:
+        moduleStates = [
+            self.frontLeft.getState(),
+            self.frontRight.getState(),
+            self.backLeft.getState(),
+            self.backRight.getState()
+        ]
+        return self.kinematics.toChassisSpeeds(moduleStates)
     
     def displayTelemetry(self) -> None:
         SmartDashboard.putNumber("gyro angle",math.radians(self.gyro.get_yaw().value))

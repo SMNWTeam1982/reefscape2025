@@ -25,12 +25,10 @@ class ModuleConstants:
     TURN_DERIVATIVE_GAIN = 0.01 *2 # Jan 18 2025
 
     # assume all values are untuned unless specified with a date of tuning
-    MAX_VELOCITY_METERS_PER_SECOND = 3.0
-    MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3.0
-    DRIVE_PROPORTIONAL_GAIN = 0.00
+    DRIVE_PROPORTIONAL_GAIN = 0.0
     DRIVE_INTEGRAL_GAIN = 0.0
     DRIVE_DERIVATIVE_GAIN = 0.0
-    DRIVE_STATIC_GAIN_VOLTS = 0.05
+    DRIVE_STATIC_GAIN_VOLTS = 0.05 # this number is made up
     DRIVE_VELOCITY_GAIN_VOLT_SECONDS_PER_METER = 2.87 # Jan 18 2025
 
     

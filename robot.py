@@ -3,6 +3,7 @@ import wpilib
 import wpimath.kinematics
 import wpimath
 from swerve import Drive
+from auto.SwerveAuto import SwerveAuto
 # from photonlibpy.photonPoseEstimator import PoseStrategy
 # from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
@@ -17,6 +18,9 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.drive = Drive.Drivetrain()
         self.driveController = wpilib.XboxController(0)
+        self.auto = SwerveAuto(self.drive)
+
+        
 #        self.cam = PhotonCamera("Camera_Module_v1")
 #        self.camPoseEst = PhotonPoseEstimator(
 #            AprilTagFieldLayout.loadField(AprilTagField.kDefaultField),
@@ -43,7 +47,7 @@ class MyRobot(wpilib.TimedRobot):
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
-        pass
+        self.auto.runAuto()
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
