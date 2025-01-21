@@ -10,10 +10,17 @@ import wpimath.geometry
 import wpimath.kinematics
 from . import SwerveModule
 from phoenix6 import hardware as ctre
+from photonlibpy.photonCamera import PhotonCamera
+from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
+import robotpy_apriltag
+
+from wpimath.estimator import SwerveDrive4PoseEstimator
+
 
 from wpilib import SmartDashboard
 
 class DriveConstants:
+    # this is the physical max speed not a speed limit
     MAX_SPEED_METERS_PER_SECOND = 3.8 # speed at 12 Volts, Jan 18 2025
     
     # translation values taken from 2024 code
@@ -21,6 +28,13 @@ class DriveConstants:
     FRONT_RIGHT_LOCATION = wpimath.geometry.Translation2d(0.2635, -0.2635)
     BACK_LEFT_LOCATION = wpimath.geometry.Translation2d(-0.2635, 0.2635)
     BACK_RIGHT_LOCATION = wpimath.geometry.Translation2d(-0.2635, -0.2635)
+
+    CAMERA_POSITION_RELATIVE_TO_ROBOT = wpimath.geometry.Pose3d.fromFeet(
+        wpimath.units.metersToFeet(0.0),
+        wpimath.units.metersToFeet(0.0),
+        wpimath.units.metersToFeet(0.0),
+        wpimath.geometry.Rotation3d.fromDegrees(0.0,0.0,0.0)
+    )
 
 class Drivetrain:
     """
@@ -44,7 +58,20 @@ class Drivetrain:
             DriveConstants.BACK_RIGHT_LOCATION,
         )
 
-        self.odometry = wpimath.kinematics.SwerveDrive4Odometry(
+        self.gyro.set_yaw(0)
+
+        self.camera = PhotonCamera("Camera_Module_v1")
+
+        self.photonVisionPoseEstimator = PhotonPoseEstimator(
+            robotpy_apriltag.loadAprilTagLayoutField(robotpy_apriltag.AprilTagField.k2025Reefscape),
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            self.cam,
+            DriveConstants.CAMERA_POSITION_RELATIVE_TO_ROBOT
+        )
+
+        self.photonVisionPoseEstimator.update(self.camera.getLatestResult())
+
+        self.poseEstimator = SwerveDrive4PoseEstimator(
             self.kinematics,
             wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value),
             (
@@ -53,9 +80,12 @@ class Drivetrain:
                 self.backLeft.getPosition(),
                 self.backRight.getPosition(),
             ),
+            self.photonVisionPoseEstimator.lastPose.toPose2d(),
+            # closer to 0 is more trust
+            (0.1,0.1,0.1), # trust swerve module data slightly less
+            (0.09,0.09,0.09) # trust vision data slightly more
         )
 
-        self.gyro.set_yaw(0)
 
     def driveWithChassisSpeeds(self,speeds: wpimath.kinematics.ChassisSpeeds):
         self.drive(
@@ -66,10 +96,10 @@ class Drivetrain:
 
     def drive(
         self,
-        xSpeed: float,
-        ySpeed: float,
-        rotation: float,
-        periodSeconds: float
+        xSpeed: float, # meters per second
+        ySpeed: float, # meters per second
+        rotation: float, # radians per second
+        periodSeconds: float # something the thingy uses
     ) -> None:
         """
         Method to drive the robot using joystick info.
@@ -107,9 +137,28 @@ class Drivetrain:
             ]
         )
 
-    def updateOdometry(self) -> None:
-        """Updates the field relative position of the robot."""
-        self.odometry.update(
+    def updatePoseEstimation(self) -> None:
+        cameraResult = self.camera.getLatestResult()
+        self.photonVisionPoseEstimator.update(cameraResult)
+
+        self.poseEstimator.addVisionMeasurement(
+            self.photonVisionPoseEstimator.lastPose.toPose2d(),
+            cameraResult.getTimestamp()
+        )
+
+        self.poseEstimator.update(
+            wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value),
+            (
+                self.frontLeft.getPosition(),
+                self.frontRight.getPosition(),
+                self.backLeft.getPosition(),
+                self.backRight.getPosition(),
+            )
+        )
+    def getPose(self) -> wpimath.geometry.Pose2d:
+        return self.poseEstimator.getEstimatedPosition() # we will get the robot pose from vision
+    def resetPose(self,pose: wpimath.geometry.Pose2d):
+        self.poseEstimator.resetPosition(
             wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value),
             (
                 self.frontLeft.getPosition(),
@@ -117,12 +166,8 @@ class Drivetrain:
                 self.backLeft.getPosition(),
                 self.backRight.getPosition(),
             ),
+            pose
         )
-    
-    def getPose(self) -> wpimath.geometry.Pose2d:
-        return wpimath.geometry.Pose2d() # we will get the robot pose from vision
-    def resetPose(self,pose: wpimath.geometry.Pose2d):
-        pass # we will use this when we get vision up
     def getRelativeSpeeds(self) -> wpimath.kinematics.ChassisSpeeds:
         moduleStates = [
             self.frontLeft.getState(),

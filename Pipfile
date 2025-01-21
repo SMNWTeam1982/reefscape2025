@@ -9,6 +9,7 @@ wpilib = "*"
 rev = "*"
 robotpy-rev = "*"
 phoenix6 = "*"
+robotpy-pathplannerlib = "*"
 
 [dev-packages]
 
