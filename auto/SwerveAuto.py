@@ -3,6 +3,10 @@ from pathplannerlib.path import PathPlannerPath
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.config import RobotConfig, PIDConstants
 from wpilib import DriverStation
+from wpilib import SendableChooser
+from wpilib import SmartDashboard
+from elevator.Elevator import Elevator
+from elevator.Intake import Intake
 
 from swerve.Drive import Drivetrain,DriveConstants
 
@@ -28,6 +32,11 @@ class SwerveAuto:
         self.pathCommand = AutoBuilder.followPath(PathPlannerPath.fromPathFile("my first auto"))
         self.pathCommand.initialize() # initialize manualy
         self.done = False
+        self.chooser = SendableChooser()
+        // options, want to test if they actually show up.
+        self.chooser.addOption("Drive", Drivetrain())
+        self.chooser.addOption("Elevator", Elevator())
+        self.chooser.addOption("Intake", Intake())
     
     def runAuto(self):
         if self.pathCommand.isFinished():
