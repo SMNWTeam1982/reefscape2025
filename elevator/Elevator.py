@@ -11,6 +11,8 @@ import rev
 from phoenix6 import hardware as ctre
 import wpimath.units
 
+from . import Intake
+
 class ElevatorConstants:
     LEVEL_1_TARGET_HEIGHT = 0.0
     LEVEL_2_TARGET_HEIGHT = 0.0
@@ -30,9 +32,6 @@ class ElevatorState(enum.Enum):
     Stopped = enum.auto
     Moving = enum.auto
     Intaking = enum.auto
-    DispenseL1 = enum.auto
-    DispenseL4 = enum.auto
-    DispenseOtherLevels = enum.auto
 class AltitudeTarget(enum.Enum):
     L1 = ElevatorConstants.LEVEL_1_TARGET_HEIGHT
     L2 = ElevatorConstants.LEVEL_2_TARGET_HEIGHT
@@ -56,6 +55,8 @@ class Elevator:
             ElevatorConstants.ALTITUDE_INTEGRAL_GAIN,
             ElevatorConstants.ALTITUDE_DERIVATIVE_GAIN
         )
+
+        self.intake = Intake()
 
         self.state = ElevatorState.Stopped
         self.target = AltitudeTarget.Intake
@@ -84,9 +85,21 @@ class Elevator:
                 self.rightAltitudeMotor.stop()
             case ElevatorState.Moving:
                 self.moveElevator()
+                if self.
+            case ElevatorState.Intaking:
+                self.target = AltitudeTarget.Intake
+                # intake
+            case ElevatorState.DispenseL1:
+                self.target = AltitudeTarget.L1
+                if self.altitudePIDController.atSetpoint():
+                    # eject intake
+                # intake
             case _:
                 # this case should never be reached, we should put something up on telemetry
                 self.state = ElevatorState.Stopped
 
     def setState(self,state: ElevatorState):
         self.state = state
+
+    def dispense(self):
+        self.intake.dispense() # method doesn't exist yet

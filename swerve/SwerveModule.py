@@ -65,7 +65,7 @@ class Wheel:
         self.turningPIDController = wpimath.controller.PIDController(
             ModuleConstants.TURN_PROPORTIONAL_GAIN, # most useful one
             ModuleConstants.TURN_INTEGRAL_GAIN, # shouldnt be any constant error, leave to 0
-            ModuleConstants.DRIVE_DERIVATIVE_GAIN # tune only with small changes at a time
+            ModuleConstants.TURN_DERIVATIVE_GAIN # tune only with small changes at a time
         )
         
         self.driveFeedforward = wpimath.controller.SimpleMotorFeedforwardMeters(
