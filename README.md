@@ -26,3 +26,6 @@ You may want to configure your editor (VSCode) to use the virtual environment th
 
 #### Note:
 Please do not edit `Pipfile.lock`, as this file is managed by pipenv and can break otherwise.
+
+### PS:
+Here is Ishant's super summarized notes of the wpilib documentation [here](https://docs.google.com/document/d/1EDiLUcMfb8uSZMkvbeYRN-dqZSBR8DbOoTo5ZQGXbvk/edit?usp=sharing)
