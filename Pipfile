@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+robotpy = "*"
+wpilib = "*"
+rev = "*"
+robotpy-rev = "*"
+phoenix6 = "*"
+robotpy-pathplannerlib = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"
+
+[scripts]
+sync = "python -m robotpy sync"
+deploy = "python -m robotpy deploy"
+sim = "python -m robotpy sim"
+test = "python -m robotpy test"
