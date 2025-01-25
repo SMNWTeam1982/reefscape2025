@@ -28,7 +28,7 @@ class DriveConstants:
     BACK_LEFT_LOCATION = wpimath.geometry.Translation2d(-0.2635, 0.2635)
     BACK_RIGHT_LOCATION = wpimath.geometry.Translation2d(-0.2635, -0.2635)
 
-    CAMERA_POSITION_RELATIVE_TO_ROBOT = wpimath.geometry.Pose3d.fromFeet(
+    CAMERA_POSITION_RELATIVE_TO_ROBOT = wpimath.geometry.Transform3d(
         wpimath.units.metersToFeet(0.0),
         wpimath.units.metersToFeet(0.0),
         wpimath.units.metersToFeet(0.0),
@@ -45,6 +45,8 @@ class Drivetrain:
         self.frontRight = SwerveModule.Wheel(5,6,1) # copied from 2024
         self.backLeft = SwerveModule.Wheel(1,2,3)
         self.backRight = SwerveModule.Wheel(7,8,4)
+
+        self.curEstPose = wpimath.geometry.Pose2d()
         
         self.gyro = ctre.pigeon2.Pigeon2(0) # copied from 2024
 
@@ -59,16 +61,16 @@ class Drivetrain:
 
         self.gyro.set_yaw(0)
 
-        self.camera = PhotonCamera("Camera_Module_v1")
+        self.cam = PhotonCamera("photonvision")
 
         self.photonVisionPoseEstimator = PhotonPoseEstimator(
-            robotpy_apriltag.loadAprilTagLayoutField(robotpy_apriltag.AprilTagField.k2025Reefscape),
+            robotpy_apriltag.AprilTagFieldLayout.loadField(robotpy_apriltag.AprilTagField.k2025Reefscape),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             self.cam,
             DriveConstants.CAMERA_POSITION_RELATIVE_TO_ROBOT
         )
 
-        self.photonVisionPoseEstimator.update(self.camera.getLatestResult())
+        self.photonVisionPoseEstimator.update(self.cam.getLatestResult())
 
         self.poseEstimator = SwerveDrive4PoseEstimator(
             self.kinematics,
@@ -79,7 +81,7 @@ class Drivetrain:
                 self.backLeft.getPosition(),
                 self.backRight.getPosition(),
             ),
-            self.photonVisionPoseEstimator.lastPose.toPose2d(),
+            self.curEstPose,
             # closer to 0 is more trust
             (0.1,0.1,0.1), # trust swerve module data slightly less
             (0.09,0.09,0.09) # trust vision data slightly more
@@ -137,13 +139,13 @@ class Drivetrain:
         )
 
     def updatePoseEstimation(self) -> None:
-        cameraResult = self.camera.getLatestResult()
+        cameraResult = self.cam.getLatestResult()
         self.photonVisionPoseEstimator.update(cameraResult)
-
-        self.poseEstimator.addVisionMeasurement(
-            self.photonVisionPoseEstimator.lastPose.toPose2d(),
-            cameraResult.getTimestamp()
-        )
+        if (cameraResult.hasTargets()):
+            self.poseEstimator.addVisionMeasurement(
+                self.photonVisionPoseEstimator.lastPose.toPose2d(),
+                cameraResult.getTimestamp()
+            )
 
         self.poseEstimator.update(
             wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value),
@@ -154,6 +156,7 @@ class Drivetrain:
                 self.backRight.getPosition(),
             )
         )
+        self.curEstPose = self.poseEstimator.getEstimatedPosition()
     def getPose(self) -> wpimath.geometry.Pose2d:
         return self.poseEstimator.getEstimatedPosition() # we will get the robot pose from vision
     def resetPose(self,pose: wpimath.geometry.Pose2d):

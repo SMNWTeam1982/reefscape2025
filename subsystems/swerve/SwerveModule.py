@@ -45,8 +45,8 @@ class Wheel:
         :param turningMotorCANID:    CANID of turn motor
         :param turningEncoderCANID:  CANID of the absolute encoder on the module
         """
-        self.driveMotor = rev.CANSparkMax(driveMotorCANID,rev.CANSparkLowLevel.MotorType.kBrushless)
-        self.turningMotor = rev.CANSparkMax(turningMotorCANID,rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.driveMotor = rev.SparkMax(driveMotorCANID,rev.SparkLowLevel.MotorType.kBrushless)
+        self.turningMotor = rev.SparkMax(turningMotorCANID,rev.SparkLowLevel.MotorType.kBrushless)
 
         # this encoder measures wheel speed and distance traveled
         self.driveEncoder = self.driveMotor.getEncoder()

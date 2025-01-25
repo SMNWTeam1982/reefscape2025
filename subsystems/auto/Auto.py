@@ -4,7 +4,7 @@ from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.config import RobotConfig, PIDConstants
 from wpilib import DriverStation
 
-from swerve.Drive import Drivetrain, DriveConstants
+from ..swerve.Drive import Drivetrain, DriveConstants
 
 from commands2 import Subsystem
 class SwerveAuto:

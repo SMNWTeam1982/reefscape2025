@@ -1,13 +1,13 @@
 import wpilib
 from subsystems.swerve import Drive
-from subsystems.auto import SwerveAuto
+from subsystems.auto import Auto
 
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.drive = Drive.Drivetrain()
         self.driveController = wpilib.XboxController(0)
-        self.auto = SwerveAuto(self.drive)
+        #self.auto = Auto.SwerveAuto(self.drive)
 
     def robotPeriodic(self):
         
@@ -21,7 +21,8 @@ class MyRobot(wpilib.TimedRobot):
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
-        self.auto.runAuto()
+        #self.auto.runAuto()
+        pass
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
