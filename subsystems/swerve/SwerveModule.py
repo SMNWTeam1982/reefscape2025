@@ -116,8 +116,8 @@ class Wheel:
         # Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
         # direction of travel that can occur when modules change directions. This results in smoother
         # driving.
-        # this equation returns the cos of the angle between state.angle and encoderRotation
-        state.speed *= state.angle.cos() * encoderRotation.cos() + state.angle.sin() * encoderRotation.sin()
+
+        state.cosineScale(encoderRotation)
 
         # Calculate the drive output from the drive PID controller. this will be added to the FF voltage
         driveOutput = self.drivePIDController.calculate(
