@@ -91,7 +91,8 @@ class Drivetrain:
         self.drive(
             speeds.vx,
             speeds.vy,
-            speeds.omega
+            speeds.omega,
+            false
         )
 
     def drive(
@@ -99,7 +100,7 @@ class Drivetrain:
         xSpeed: float, # meters per second
         ySpeed: float, # meters per second
         rotation: float, # radians per second
-        periodSeconds: float # something the thingy uses
+        fieldRelative: bool
     ) -> None:
         """
         Method to drive the robot using joystick info.
@@ -107,14 +108,18 @@ class Drivetrain:
         :param ySpeed: Speed of the robot in the y direction (sideways).
         :param rot: Angular rate of the robot.
         """
+
+        speeds = wpimath.kinematics.ChassisSpeeds(xSpeed,ySpeed,rotation)
+        
+        if fieldRelative:
+            speeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
+                xSpeed, ySpeed, rotation, wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value)
+            )
+        
         swerveModuleStates = self.kinematics.toSwerveModuleStates(
             wpimath.kinematics.ChassisSpeeds.discretize(
-                (
-                    wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, rotation, wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value)
-                    )
-                ),
-                periodSeconds,
+                speeds,
+                0.02, # this number comes from the TimedRobot default period
             )
         )
         
