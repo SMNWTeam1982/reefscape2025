@@ -61,30 +61,23 @@ class Intake:
         self.coralMotor = rev.CANSparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
 
 
-
-
         self.wristPIDController = wpimath.controller.PIDController(
             IntakeConstants.WRIST_PROPORTIONAL_GAIN,
             IntakeConstants.WRIST_INTEGRAL_GAIN,
             IntakeConstants.WRIST_DERIVATIVE_GAIN
         )
 
-
-        self.intake = Intake()
-
         self.state = IntakeState.Stopped
         self.target = WristTarget.Intake
 
 
-    def getWristPosition(self) -> wpimath.units.meters:
-        wristPosition = (self.wristEncoder.getPosition())
-
+    def getWristPosition(self) -> wpimath.geometry.Rotation2d:
+        wristPosition = self.wristEncoder.getPosition() # convert to rotation 2d when we get the actual encoder information
 
         return wristPosition 
     
     def moveWrist(self):
-
-        amount = self.wristPIDController.calculate(self.getWristPosition(),self.state.value)
+        amount = self.wristPIDController.calculate(self.getWristPosition().radians(),self.state.value)
 
         self.wristMotor.run(amount)
 
@@ -93,7 +86,7 @@ class Intake:
             case IntakeState.Disabled:
                 self.wristMotor.stop()
             case IntakeState.Moving:
-                self.moveElevator()
+                self.moveWrist()
             case _:
                 # this case should never be reached, we should put something up on telemetry
                 self.state = IntakeState.Stopped
