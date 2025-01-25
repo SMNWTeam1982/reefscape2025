@@ -59,7 +59,7 @@ class MyRobot(wpilib.TimedRobot):
             self.deadzone(x),
             self.deadzone(y),
             self.deadzone(turn),
-            self.getPeriod()
+            true
         )
     
     def deadzone(self, num: float) -> float:
