@@ -19,6 +19,11 @@ class ElevatorConstants:
     LEVEL_3_TARGET_HEIGHT = 0.0
     LEVEL_4_TARGET_HEIGHT = 0.0
 
+    ALGAE_1_TARGET_HEIGHT = 0.0
+    ALGAE_2_TARGET_HEIGHT = 0.0
+
+    PROCESSOR_TARGET_HEIGHT = 0.0
+
     INTAKING_TARGET_HEIGHT = 0.0
 
     ALTITUDE_PROPORTIONAL_GAIN = 1.0
@@ -29,18 +34,20 @@ class ElevatorConstants:
     POSITION_TO_ELEVATOR_HEIGHT_OFFSET = 0.0
 
 class ElevatorState(enum.Enum):
-    Stopped = enum.auto
+    Disabled = enum.auto
     Moving = enum.auto
-    Intaking = enum.auto
 class AltitudeTarget(enum.Enum):
     L1 = ElevatorConstants.LEVEL_1_TARGET_HEIGHT
     L2 = ElevatorConstants.LEVEL_2_TARGET_HEIGHT
     L3 = ElevatorConstants.LEVEL_3_TARGET_HEIGHT
     L4 = ElevatorConstants.LEVEL_4_TARGET_HEIGHT
 
+    Algae1 = ElevatorConstants.ALGAE_1_TARGET_HEIGHT
+    Algae2 = ElevatorConstants.ALGAE_2_TARGET_HEIGHT
+
+    Processor = ElevatorConstants.PROCESSOR_TARGET_HEIGHT
+
     Intake = ElevatorConstants.INTAKING_TARGET_HEIGHT
-
-
 
 class Elevator:
     def __init__(self):
@@ -62,7 +69,6 @@ class Elevator:
         self.target = AltitudeTarget.Intake
 
     def getElevatorHeight(self) -> wpimath.units.meters:
-
         # one of these positions will need to be negated before adding, we dont know which one yet
         averagePosition = (self.leftAltitudeEncoder.getPosition() + self.rightAltitudeEncoder.getPosition()) / 2
 
@@ -80,20 +86,11 @@ class Elevator:
 
     def runAltitudeController(self):
         match self.state:
-            case ElevatorState.Stopped:
+            case ElevatorState.Disabled:
                 self.leftAltitudeMotor.stop()
                 self.rightAltitudeMotor.stop()
             case ElevatorState.Moving:
                 self.moveElevator()
-                if self.
-            case ElevatorState.Intaking:
-                self.target = AltitudeTarget.Intake
-                # intake
-            case ElevatorState.DispenseL1:
-                self.target = AltitudeTarget.L1
-                if self.altitudePIDController.atSetpoint():
-                    # eject intake
-                # intake
             case _:
                 # this case should never be reached, we should put something up on telemetry
                 self.state = ElevatorState.Stopped
@@ -101,5 +98,5 @@ class Elevator:
     def setState(self,state: ElevatorState):
         self.state = state
 
-    def dispense(self):
-        self.intake.dispense() # method doesn't exist yet
+    def setAltitudeTarget(self,target: AltitudeTarget):
+        self.target = target
