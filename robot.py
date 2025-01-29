@@ -21,7 +21,7 @@ class MyRobot(wpilib.TimedRobot):
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
-        #self.auto.runAuto()
+        self.auto.runAuto()
         pass
     def teleopInit(self):
         pass

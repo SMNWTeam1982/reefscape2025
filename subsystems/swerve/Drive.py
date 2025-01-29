@@ -41,10 +41,10 @@ class Drivetrain:
     """
 
     def __init__(self) -> None:
-        self.frontLeft = SwerveModule.Wheel(3,4,2)
-        self.frontRight = SwerveModule.Wheel(5,6,1) # copied from 2024
-        self.backLeft = SwerveModule.Wheel(1,2,3)
-        self.backRight = SwerveModule.Wheel(7,8,4)
+        self.frontLeft = SwerveModule.Wheel(7,8,4)
+        self.frontRight = SwerveModule.Wheel(1,2,3) # copied from 2024
+        self.backLeft = SwerveModule.Wheel(5,4,1)
+        self.backRight = SwerveModule.Wheel(3,6,2)
 
         self.curEstPose = wpimath.geometry.Pose2d()
         

@@ -19,9 +19,9 @@ class ModuleConstants:
     POSITION_TO_METERS_TRAVELED_MULTIPLIER = 0.2855
 
     # assume all values are untuned unless specified with a date of tuning
-    TURN_PROPORTIONAL_GAIN = 0.73 *2 # Jan 18 2025
+    TURN_PROPORTIONAL_GAIN = 0.73 *1 # Jan 18 2025
     TURN_INTEGRAL_GAIN = 0.0 # Jan 18 2025
-    TURN_DERIVATIVE_GAIN = 0.01 *2 # Jan 18 2025
+    TURN_DERIVATIVE_GAIN = 0.01 *1 # Jan 18 2025
 
     # assume all values are untuned unless specified with a date of tuning
     DRIVE_PROPORTIONAL_GAIN = 0.0
@@ -109,26 +109,24 @@ class Wheel:
         encoderRotation = wpimath.geometry.Rotation2d.fromRotations(self.moduleEncoder.get_position().value)
 
         # Optimize the reference state to avoid spinning further than 90 degrees
-        state = wpimath.kinematics.SwerveModuleState.optimize(
-            desiredState, encoderRotation
-        )
+        desiredState.optimize(encoderRotation)
 
         # Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
         # direction of travel that can occur when modules change directions. This results in smoother
         # driving.
 
-        state.cosineScale(encoderRotation)
+        desiredState.cosineScale(encoderRotation)
 
         # Calculate the drive output from the drive PID controller. this will be added to the FF voltage
         driveOutput = self.drivePIDController.calculate(
-            self.driveEncoder.getVelocity(), state.speed
+            self.driveEncoder.getVelocity(), desiredState.speed
         )
 
-        driveFeedforward = self.driveFeedforward.calculate(state.speed) # converts mps to volts
+        driveFeedforward = self.driveFeedforward.calculate(desiredState.speed) # converts mps to volts
 
         # Calculate the turning motor output from the turning PID controller.
         turnOutput = self.turningPIDController.calculate(
-            encoderRotation.radians(), state.angle.radians()
+            encoderRotation.radians(), desiredState.angle.radians()
         )
         
         if turnOutput > 1.0:
