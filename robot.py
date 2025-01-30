@@ -7,7 +7,7 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.drive = Drive.Drivetrain()
         self.driveController = wpilib.XboxController(0)
-        #self.auto = Auto.SwerveAuto(self.drive)
+        self.auto = Auto.SwerveAuto(self.drive)
 
     def robotPeriodic(self):
         

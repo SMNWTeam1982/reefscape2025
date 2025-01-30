@@ -12,6 +12,7 @@ from phoenix6 import hardware as ctre
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
 import robotpy_apriltag
+from pathplannerlib.util import DriveFeedforwards
 
 from wpimath.estimator import SwerveDrive4PoseEstimator
 
@@ -42,16 +43,14 @@ class Drivetrain:
 
     def __init__(self) -> None:
         self.frontLeft = SwerveModule.Wheel(7,8,4)
-        self.frontRight = SwerveModule.Wheel(1,2,3) # copied from 2024
+        self.frontRight = SwerveModule.Wheel(1,2,3)
         self.backLeft = SwerveModule.Wheel(5,4,1)
         self.backRight = SwerveModule.Wheel(3,6,2)
 
         self.curEstPose = wpimath.geometry.Pose2d()
         
-        self.gyro = ctre.pigeon2.Pigeon2(0) # copied from 2024
+        self.gyro = ctre.pigeon2.Pigeon2(0)
 
-        # unsure if kinematics is constant so I keep here - zach
-        # took me far too long to figure you were using the wrong constants - kay
         self.kinematics = wpimath.kinematics.SwerveDrive4Kinematics(
             DriveConstants.FRONT_LEFT_LOCATION,
             DriveConstants.FRONT_RIGHT_LOCATION,
@@ -88,7 +87,7 @@ class Drivetrain:
         )
 
 
-    def driveWithChassisSpeeds(self,speeds: wpimath.kinematics.ChassisSpeeds):
+    def driveWithChassisSpeeds(self,speeds: wpimath.kinematics.ChassisSpeeds,feeds: DriveFeedforwards):
         self.drive(
             speeds.vx,
             speeds.vy,
@@ -100,7 +99,6 @@ class Drivetrain:
         xSpeed: float, # meters per second
         ySpeed: float, # meters per second
         rotation: float, # radians per second
-        periodSeconds: float # something the thingy uses
     ) -> None:
         """
         Method to drive the robot using joystick info.
@@ -115,7 +113,7 @@ class Drivetrain:
                         xSpeed, ySpeed, rotation, wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value)
                     )
                 ),
-                periodSeconds,
+                0.02,
             )
         )
         
