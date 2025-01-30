@@ -10,7 +10,7 @@ class MyRobot(wpilib.TimedRobot):
         self.auto = Auto.SwerveAuto(self.drive)
 
     def robotPeriodic(self):
-        
+        self.drive.updatePoseEstimation()
         self.drive.displayTelemetry()
 
         if self.driveController.getAButton():
