@@ -12,6 +12,7 @@ from . import SwerveModule
 from phoenix6 import hardware as ctre
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
+import photonlibpy
 import robotpy_apriltag
 from pathplannerlib.util import DriveFeedforwards
 from pathplannerlib.logging import PathPlannerLogging
@@ -32,10 +33,10 @@ class DriveConstants:
     BACK_RIGHT_LOCATION = wpimath.geometry.Translation2d(-0.2635, -0.2635)
 
     CAMERA_POSITION_RELATIVE_TO_ROBOT = wpimath.geometry.Transform3d(
-        wpimath.units.metersToFeet(0.0),
-        wpimath.units.metersToFeet(0.0),
-        wpimath.units.metersToFeet(0.0),
-        wpimath.geometry.Rotation3d.fromDegrees(0.0,0.0,0.0)
+        0.5,
+        0.0,
+        0.0,
+        wpimath.geometry.Rotation3d.fromDegrees(0.0,15.0,0.0)
     )
 
 class Drivetrain:
@@ -61,16 +62,14 @@ class Drivetrain:
 
         self.gyro.set_yaw(0)
 
-        self.cam = PhotonCamera("photonvision")
+        self.cam = PhotonCamera('Camera_Module_v1')
 
         self.photonVisionPoseEstimator = PhotonPoseEstimator(
-            robotpy_apriltag.AprilTagFieldLayout.loadField(robotpy_apriltag.AprilTagField.k2025Reefscape),
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            robotpy_apriltag.AprilTagFieldLayout.loadField(robotpy_apriltag.AprilTagField.kDefaultField),
+            PoseStrategy.LOWEST_AMBIGUITY,
             self.cam,
             DriveConstants.CAMERA_POSITION_RELATIVE_TO_ROBOT
         )
-
-        self.photonVisionPoseEstimator.update(self.cam.getLatestResult())
 
         self.poseEstimator = SwerveDrive4PoseEstimator(
             self.kinematics,
@@ -139,9 +138,6 @@ class Drivetrain:
             ]
         )
     def updatePoseEstimation(self) -> None:
-        result = self.photonVisionPoseEstimator.update(self.cam.getLatestResult())
-        if result != None:
-            self.poseEstimator.addVisionMeasurement(result.estimatedPose.toPose2d())
 
         self.poseEstimator.update(
             wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value),
@@ -152,7 +148,11 @@ class Drivetrain:
                 self.backRight.getPosition(),
             )
         )
-        self.curEstPose = self.poseEstimator.getEstimatedPosition()
+
+        result = self.photonVisionPoseEstimator.update(self.cam.getLatestResult())
+        if result:
+            self.poseEstimator.addVisionMeasurement(result.estimatedPose.toPose2d(),result.timestampSeconds)
+
     def getPose(self) -> wpimath.geometry.Pose2d:
         return self.poseEstimator.getEstimatedPosition() # we will get the robot pose from vision
     def resetPose(self,pose: wpimath.geometry.Pose2d):
@@ -207,12 +207,15 @@ class Drivetrain:
             ]
         )
 
-        #PathPlannerLogging.setLogCurrentPoseCallback(lambda pose: self.field.setRobotPose(pose))
-        #PathPlannerLogging.setLogTargetPoseCallback(lambda pose: self.field.getObject("target pose").setPose(pose))
-        #PathPlannerLogging.setLogActivePathCallback(lambda poses: self.field.getObject("path").setPoses(poses))
+        PathPlannerLogging.setLogCurrentPoseCallback(lambda pose: self.field.setRobotPose(pose))
+        PathPlannerLogging.setLogTargetPoseCallback(lambda pose: self.field.getObject("target pose").setPose(pose))
+        PathPlannerLogging.setLogActivePathCallback(lambda poses: self.field.getObject("path").setPoses(poses))
 
         #SmartDashboard.putData("robot pose",self.poseEstimator.getEstimatedPosition())
-        self.field.setRobotPose(self.poseEstimator.getEstimatedPosition())
+        #self.field.setRobotPose(self.poseEstimator.getEstimatedPosition())
+        
+        SmartDashboard.putBoolean("targets",self.cam.getLatestResult().hasTargets())
+
         # SmartDashboard.putData(
         #     "module positions",
         #     [
