@@ -33,10 +33,10 @@ class DriveConstants:
     BACK_RIGHT_LOCATION = wpimath.geometry.Translation2d(-0.2635, -0.2635)
 
     CAMERA_POSITION_RELATIVE_TO_ROBOT = wpimath.geometry.Transform3d(
-        0.5,
+        wpimath.units.inchesToMeters(15.0),
         0.0,
-        0.0,
-        wpimath.geometry.Rotation3d.fromDegrees(0.0,15.0,0.0)
+        wpimath.units.inchesToMeters(5.0),
+        wpimath.geometry.Rotation3d.fromDegrees(0.0,11.0,3.5)
     )
 
 class Drivetrain:
@@ -82,8 +82,8 @@ class Drivetrain:
             ),
             wpimath.geometry.Pose2d(),
             # closer to 0 is more trust
-            (0.1,0.1,0.1), # trust swerve module data slightly less
-            (0.09,0.09,0.09) # trust vision data slightly more
+            (0.1,0.1,0.1), # trust swerve module data slightly less, except for gyro
+            (0.09,0.09,1) # trust vision data slightly more
         )
 
         self.field = Field2d()
@@ -207,12 +207,15 @@ class Drivetrain:
             ]
         )
 
-        PathPlannerLogging.setLogCurrentPoseCallback(lambda pose: self.field.setRobotPose(pose))
-        PathPlannerLogging.setLogTargetPoseCallback(lambda pose: self.field.getObject("target pose").setPose(pose))
-        PathPlannerLogging.setLogActivePathCallback(lambda poses: self.field.getObject("path").setPoses(poses))
+        #PathPlannerLogging.setLogCurrentPoseCallback(lambda pose: self.field.setRobotPose(pose))
+        #PathPlannerLogging.setLogTargetPoseCallback(lambda pose: self.field.getObject("target pose").setPose(pose))
+        #PathPlannerLogging.setLogActivePathCallback(lambda poses: self.field.getObject("path").setPoses(poses))
 
         #SmartDashboard.putData("robot pose",self.poseEstimator.getEstimatedPosition())
-        #self.field.setRobotPose(self.poseEstimator.getEstimatedPosition())
+        pose = self.poseEstimator.getEstimatedPosition()
+        SmartDashboard.putNumber("x",pose.x)
+        SmartDashboard.putNumber("y",pose.y)
+        self.field.setRobotPose(pose)
         
         SmartDashboard.putBoolean("targets",self.cam.getLatestResult().hasTargets())
 

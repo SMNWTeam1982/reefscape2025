@@ -37,19 +37,19 @@ class MyRobot(wpilib.TimedRobot):
         y=0.0
         turn=0.0
 
-        if self.guitar.getPOV(0):
+        if self.guitar.getPOV() == 0:
             turn = 1
-        if self.guitar.getPOV(180):
+        if self.guitar.getPOV() == 180:
             turn = -1
 
         if self.guitar.getAButton():
             x+=1
         if self.guitar.getBButton():
-            x-=1
-        if self.guitar.getXButton():
-            y+=1
-        if self.guitar.getYButton():
             y-=1
+        if self.guitar.getXButton():
+            x-=1
+        if self.guitar.getYButton():
+            y+=1
         
         
 
