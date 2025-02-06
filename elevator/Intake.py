@@ -51,14 +51,14 @@ class IntakeState(enum.Enum):
 
 class Intake:
     def __init__(self):
-        self.wristMotor = rev.CANSparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.wristMotor = rev.CANSparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
         self.wristEncoder = self.WristMotor.getEncoder()
 
-        self.rightAlgeaMotor = rev.CANSparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.rightAlgeaMotor = rev.CANSparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
 
-        self.leftAlgaeMotor = rev.CANSparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.leftAlgaeMotor = rev.CANSparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
 
-        self.coralMotor = rev.CANSparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.coralMotor = rev.CANSparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
 
 
         self.wristPIDController = wpimath.controller.PIDController(
@@ -77,7 +77,7 @@ class Intake:
         return wristPosition 
     
     def moveWrist(self):
-        amount = self.wristPIDController.calculate(self.getWristPosition().radians(),self.state.value)
+        amount = self.wristPIDController.calculate(self.getWristPosition(),self.state.value)
 
         self.wristMotor.run(amount)
 
