@@ -2,8 +2,8 @@ import math
 import wpilib
 import wpimath.kinematics
 import wpimath
-from swerve import Drive
-from auto.SwerveAuto import SwerveAuto
+from subsystems.swerve import Drive
+from subsystems.auto import Auto
 # from photonlibpy.photonPoseEstimator import PoseStrategy
 # from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
@@ -18,49 +18,57 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.drive = Drive.Drivetrain()
         self.driveController = wpilib.XboxController(0)
-        self.auto = SwerveAuto(self.drive)
+        # We are NOT using this at comp - Kay
+        #self.guitar = wpilib.XboxController(1)
+        self.auto = Auto.SwerveAuto(self.drive)
 
-        
-#        self.cam = PhotonCamera("Camera_Module_v1")
-#        self.camPoseEst = PhotonPoseEstimator(
-#            AprilTagFieldLayout.loadField(AprilTagField.kDefaultField),
-#            PoseStrategy.LOWEST_AMBIGUITY,
-#            self.cam,
-#            kRobotToCam,
-#        )
     def robotPeriodic(self):
-#        camEstPose = self.camPoseEst.update()
-
-        # update pose with this (probably doesnt work)
-        # if camEstPose:
-        #     self.drive.addVisionPoseEstimate(
-        #             camEstPose.estimatedPos, camEstPose.timestampSeconds
-        #     )
-
-        
+        self.drive.updatePoseEstimation()
         self.drive.displayTelemetry()
 
         if self.driveController.getAButton():
             self.drive.displayDrivePID()
         if self.driveController.getBButton():
             self.drive.updateDrivePIDs()
+
+    def disabledPeriodic(self):
+        return super().disabledPeriodic()
+
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
         self.auto.runAuto()
+        pass
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
         x = -self.driveController.getLeftX()
         y = self.driveController.getLeftY()
         turn = self.driveController.getRightX()
+        # Unused Guitar code - see above
+        #x=0.0
+        #y=0.0
+        #turn=0.0
+        #if self.guitar.getPOV() == 0:
+            #turn = 1
+        #if self.guitar.getPOV() == 180:
+            #turn = -1
+        #if self.guitar.getAButton():
+            #x+=1
+        #if self.guitar.getBButton():
+            #y-=1
+        #if self.guitar.getXButton():
+            #x-=1
+        #if self.guitar.getYButton():
+            #y+=1
 
         self.drive.drive(
             self.deadzone(x),
             self.deadzone(y),
-            self.deadzone(turn),
-            True
+            self.deadzone(turn)
         )
+        
+        
     
     def deadzone(self, num: float) -> float:
         if abs(num) < 0.05:
