@@ -168,4 +168,4 @@ networktables.json
 __pycache__
 .pytest_cache
 .wpilib
-tests/*/*.dat
+tests/
