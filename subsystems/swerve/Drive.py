@@ -12,7 +12,6 @@ from . import SwerveModule
 from phoenix6 import hardware as ctre
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
-import photonlibpy
 import robotpy_apriltag
 from pathplannerlib.util import DriveFeedforwards
 from pathplannerlib.logging import PathPlannerLogging
@@ -62,7 +61,7 @@ class Drivetrain:
 
         self.gyro.set_yaw(0)
 
-        self.cam = PhotonCamera('Camera_Module_v1')
+        self.cam = PhotonCamera('limelight-front')
 
         self.photonVisionPoseEstimator = PhotonPoseEstimator(
             robotpy_apriltag.AprilTagFieldLayout.loadField(robotpy_apriltag.AprilTagField.kDefaultField),
