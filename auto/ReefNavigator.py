@@ -6,6 +6,8 @@ import wpimath.geometry
 import wpimath.kinematics
 
 class ReefNavigationConstants:
+    SNAP_RADIUS = wpimath.units.inchesToMeters(23.87490776)
+
     BLUE_REEF_CENTER_POSITION = wpimath.geometry.Translation2d(
         wpimath.units.inchesToMeters(176.745),
         wpimath.units.inchesToMeters(158.5)
@@ -42,4 +44,8 @@ class ReefNavigationConstants:
     ]
 
 class ReefNavigator:
-    pass
+    def getNearestLeft(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2d:
+        robotPos.nearest(ReefNavigationConstants.BLUE_LEFT_SETPOINTS)
+    def getNearestRight(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2d:
+        robotPos.nearest(ReefNavigationConstants.BLUE_RIGHT_SETPOINTS)
+
