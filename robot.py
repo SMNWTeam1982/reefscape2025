@@ -21,7 +21,7 @@ class MyRobot(wpilib.TimedRobot):
         # We are NOT using this at comp - Kay
         #self.guitar = wpilib.XboxController(1)
         self.operateController = wpilib.XboxController(1)
-        self.auto = Auto.SwerveAuto.SwerveAuto(self.drive)
+        self.auto = Auto.SwerveAuto(self.drive)
         self.runningReefNavigation = False
 
     def robotPeriodic(self):

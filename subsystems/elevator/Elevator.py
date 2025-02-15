@@ -11,20 +11,23 @@ import rev
 from phoenix6 import hardware as ctre
 import wpimath.units
 
-from . import Intake
 
+
+from Intake import Intake
+from Intake import IntakeState
 class ElevatorConstants:
     LEVEL_1_TARGET_HEIGHT = 0.0
     LEVEL_2_TARGET_HEIGHT = 0.0
     LEVEL_3_TARGET_HEIGHT = 0.0
     LEVEL_4_TARGET_HEIGHT = 0.0
 
-    ALGAE_1_TARGET_HEIGHT = 0.0
     ALGAE_2_TARGET_HEIGHT = 0.0
 
     PROCESSOR_TARGET_HEIGHT = 0.0
 
     INTAKING_TARGET_HEIGHT = 0.0
+
+    IDLE_TARGET_HEIGHT = 0.0
 
     ALTITUDE_PROPORTIONAL_GAIN = 1.0
     ALTITUDE_INTEGRAL_GAIN = 0.0
@@ -33,28 +36,12 @@ class ElevatorConstants:
     POSITION_TO_ELEVATOR_HEIGHT_MULTIPLIER = 1.0
     POSITION_TO_ELEVATOR_HEIGHT_OFFSET = 0.0
 
-class ElevatorState(enum.Enum):
-    Disabled = enum.auto
-    Moving = enum.auto
-class AltitudeTarget(enum.Enum):
-    L1 = ElevatorConstants.LEVEL_1_TARGET_HEIGHT
-    L2 = ElevatorConstants.LEVEL_2_TARGET_HEIGHT
-    L3 = ElevatorConstants.LEVEL_3_TARGET_HEIGHT
-    L4 = ElevatorConstants.LEVEL_4_TARGET_HEIGHT
-
-    Algae1 = ElevatorConstants.ALGAE_1_TARGET_HEIGHT
-    Algae2 = ElevatorConstants.ALGAE_2_TARGET_HEIGHT
-
-    Processor = ElevatorConstants.PROCESSOR_TARGET_HEIGHT
-
-    Intake = ElevatorConstants.INTAKING_TARGET_HEIGHT
-
 class Elevator:
     def __init__(self):
-        self.leftAltitudeMotor = rev.CANSparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.leftAltitudeMotor = rev.SparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
         self.leftAltitudeEncoder = self.leftAltitudeMotor.getEncoder()
 
-        self.rightAltitudeMotor = rev.CANSparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.rightAltitudeMotor = rev.SparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
         self.rightAltitudeEncoder = self.rightAltitudeMotor.getEncoder()
 
         self.altitudePIDController = wpimath.controller.PIDController(
@@ -65,8 +52,7 @@ class Elevator:
 
         self.intake = Intake()
 
-        self.state = ElevatorState.Stopped
-        self.target = AltitudeTarget.Intake
+        self.targetHeight = ElevatorConstants.IDLE_TARGET_HEIGHT
 
     def getElevatorHeight(self) -> wpimath.units.meters:
         # one of these positions will need to be negated before adding, we dont know which one yet
@@ -76,27 +62,19 @@ class Elevator:
 
         return averagePosition + ElevatorConstants.POSITION_TO_ELEVATOR_HEIGHT_OFFSET
     
-    def moveElevator(self):
+    def moveElevator(self): # run pid
 
-        amount = self.altitudePIDController.calculate(self.getElevatorHeight(),self.state.value)
+        amount = self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)
         
         # one will need to be negated, we dont know which one yet
-        self.leftAltitudeMotor.run(amount)
+        self.leftAltitudeMotor.run(-amount)
         self.rightAltitudeMotor.run(amount)
+    
+    def runElevator(self):
+        self.moveElevator()
+        self.intake.runWrists()
 
-    def runAltitudeController(self):
-        match self.state:
-            case ElevatorState.Disabled:
-                self.leftAltitudeMotor.stop()
-                self.rightAltitudeMotor.stop()
-            case ElevatorState.Moving:
-                self.moveElevator()
-            case _:
-                # this case should never be reached, we should put something up on telemetry
-                self.state = ElevatorState.Stopped
-
-    def setState(self,state: ElevatorState):
-        self.state = state
-
-    def setAltitudeTarget(self,target: AltitudeTarget):
-        self.target = target
+        if not self.altitudePIDController.atSetpoint():
+            return
+        if self.targetHeight == ElevatorConstants.INTAKING_TARGET_HEIGHT:
+            self.intake.runIntakeEject()
