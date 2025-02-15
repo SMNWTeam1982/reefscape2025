@@ -2,8 +2,10 @@ import math
 import wpilib
 import wpimath.kinematics
 import wpimath
+import auto.ReefNavigator
+import auto.SwerveAuto
 from swerve import Drive
-from auto.SwerveAuto import SwerveAuto
+import auto
 # from photonlibpy.photonPoseEstimator import PoseStrategy
 # from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
@@ -18,7 +20,9 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.drive = Drive.Drivetrain()
         self.driveController = wpilib.XboxController(0)
-        self.auto = SwerveAuto(self.drive)
+        self.operateController = wpilib.XboxController(1)
+        self.auto = auto.SwerveAuto.SwerveAuto(self.drive)
+        self.runningReefNavigation = False
 
         
 #        self.cam = PhotonCamera("Camera_Module_v1")
@@ -37,13 +41,18 @@ class MyRobot(wpilib.TimedRobot):
         #             camEstPose.estimatedPos, camEstPose.timestampSeconds
         #     )
 
-        
+
+
+
         self.drive.displayTelemetry()
 
         if self.driveController.getAButton():
             self.drive.displayDrivePID()
         if self.driveController.getBButton():
             self.drive.updateDrivePIDs()
+
+        
+        
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
@@ -51,6 +60,17 @@ class MyRobot(wpilib.TimedRobot):
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
+
+        # put operator controls above this if stanement
+
+        if self.runningReefNavigation:
+            if self.auto.runAuto():
+                self.runningReefNavigation = False
+            else:
+                return
+
+
+
         x = -self.driveController.getLeftX()
         y = self.driveController.getLeftY()
         turn = self.driveController.getRightX()
@@ -61,6 +81,17 @@ class MyRobot(wpilib.TimedRobot):
             self.deadzone(turn),
             True
         )
+        
+        if self.operateController.getAButton():
+            targetPose = auto.ReefNavigator.getNearestLeft()
+            if targetPose.translation().distance(self.drive.getPose().translation()) < auto.ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
+                self.auto.generatePathToPose(targetPose)
+                self.runningReefNavigation = True
+        if self.operateController.getBButton():
+            targetPose = auto.ReefNavigator.getNearestRight()
+            if targetPose.translation().distance(self.drive.getPose().translation()) < auto.ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
+                self.auto.generatePathToPose(targetPose)
+                self.runningReefNavigation = True
     
     def deadzone(self, num: float) -> float:
         if abs(num) < 0.05:
