@@ -165,3 +165,7 @@ cython_debug/
 # RobotPy Library Ignores
 simgui*
 networktables.json
+__pycache__
+.pytest_cache
+.wpilib
+tests/

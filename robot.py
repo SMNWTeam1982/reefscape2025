@@ -2,10 +2,8 @@ import math
 import wpilib
 import wpimath.kinematics
 import wpimath
-import auto.ReefNavigator
-import auto.SwerveAuto
-from swerve import Drive
-import auto
+from subsystems.swerve import Drive
+from subsystems.auto import Auto, ReefNavigator
 # from photonlibpy.photonPoseEstimator import PoseStrategy
 # from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
@@ -20,18 +18,12 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.drive = Drive.Drivetrain()
         self.driveController = wpilib.XboxController(0)
+        # We are NOT using this at comp - Kay
+        #self.guitar = wpilib.XboxController(1)
         self.operateController = wpilib.XboxController(1)
         self.auto = auto.SwerveAuto.SwerveAuto(self.drive)
         self.runningReefNavigation = False
 
-        
-#        self.cam = PhotonCamera("Camera_Module_v1")
-#        self.camPoseEst = PhotonPoseEstimator(
-#            AprilTagFieldLayout.loadField(AprilTagField.kDefaultField),
-#            PoseStrategy.LOWEST_AMBIGUITY,
-#            self.cam,
-#            kRobotToCam,
-#        )
     def robotPeriodic(self):
 #        camEstPose = self.camPoseEst.update()
 
@@ -40,23 +32,17 @@ class MyRobot(wpilib.TimedRobot):
         #     self.drive.addVisionPoseEstimate(
         #             camEstPose.estimatedPos, camEstPose.timestampSeconds
         #     )
-
-
-
-
         self.drive.displayTelemetry()
 
         if self.driveController.getAButton():
             self.drive.displayDrivePID()
         if self.driveController.getBButton():
             self.drive.updateDrivePIDs()
-
-        
-        
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
         self.auto.runAuto()
+        pass
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
@@ -74,14 +60,28 @@ class MyRobot(wpilib.TimedRobot):
         x = -self.driveController.getLeftX()
         y = self.driveController.getLeftY()
         turn = self.driveController.getRightX()
+        # Unused Guitar code - see above
+        #x=0.0
+        #y=0.0
+        #turn=0.0
+        #if self.guitar.getPOV() == 0:
+            #turn = 1
+        #if self.guitar.getPOV() == 180:
+            #turn = -1
+        #if self.guitar.getAButton():
+            #x+=1
+        #if self.guitar.getBButton():
+            #y-=1
+        #if self.guitar.getXButton():
+            #x-=1
+        #if self.guitar.getYButton():
+            #y+=1
 
         self.drive.drive(
             self.deadzone(x),
             self.deadzone(y),
-            self.deadzone(turn),
-            True
+            self.deadzone(turn)
         )
-        
         if self.operateController.getAButton():
             targetPose = auto.ReefNavigator.getNearestLeft()
             if targetPose.translation().distance(self.drive.getPose().translation()) < auto.ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:

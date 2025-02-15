@@ -283,6 +283,19 @@
             "markers": "platform_machine != 'roborio'",
             "version": "==4.11.0.86"
         },
+        "opencv-python": {
+            "hashes": [
+                "sha256:03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4",
+                "sha256:085ad9b77c18853ea66283e98affefe2de8cc4c1f43eda4c100cf9b2721142ec",
+                "sha256:1b92ae2c8852208817e6776ba1ea0d6b1e0a1b5431e971a2a0ddd2a8cc398202",
+                "sha256:432f67c223f1dc2824f5e73cdfcd9db0efc8710647d4e813012195dc9122a52a",
+                "sha256:6b02611523803495003bd87362db3e1d2a0454a6a63025dc6658a9830570aa0d",
+                "sha256:810549cb2a4aedaa84ad9a1c92fbfdfc14090e2749cedf2c1589ad8359aa169b",
+                "sha256:9d05ef13d23fe97f575153558653e2d6e87103995d54e6a35db3f282fe1f9c66"
+            ],
+            "markers": "platform_machine != 'roborio'",
+            "version": "==4.11.0.86"
+        },
         "packaging": {
             "hashes": [
                 "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5",
@@ -310,6 +323,14 @@
             "index": "pypi",
             "markers": "python_version >= '3.10' and python_version < '4'",
             "version": "==25.2.2"
+        },
+        "photonlibpy": {
+            "hashes": [
+                "sha256:42718ea2341597f5d7740615e29b21aace7e7a8fd9ae5fd8d44c6e82923ef456",
+                "sha256:fb03f2517786e141dad8d1a147bb29ee92d66e83a6662d4945a7105cf45cf709"
+            ],
+            "index": "pypi",
+            "version": "==2025.1.1"
         },
         "photonlibpy": {
             "hashes": [
@@ -462,6 +483,27 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==2025.3.1.0"
+        },
+        "robotpy-apriltag": {
+            "hashes": [
+                "sha256:17b8666240ee9b98f6b50ca5f34a9fbec30ea00a7117bb2f77bccede413703d4",
+                "sha256:32247973034d4757653b3cec107e6879a89b6a928b1979a0857a920419eb8557",
+                "sha256:32ac6095fed120c537146147fd93e293e7732afac71c9080c880570b2f59d833",
+                "sha256:3d12e5053cb14279c86e542304d7b12f17740c635b33daa281b0850e315cd8ef",
+                "sha256:72440666802d56a6d33c426160805d245325f7212122769ca2611823754f2713",
+                "sha256:8f48735c2c5a89919524d2cbd5b41a32d0b52d08a996ab7a0eabd5684bf94377",
+                "sha256:960b7daf138183fff2309cea277b76a646b6e62093953618397803603e128079",
+                "sha256:9699536e4c68246362a2158126984a7203957826577b64e7df6873a53889f4ad",
+                "sha256:c8c85234ac361635b864fe28d6b5d2983cc6b02d9a9ca414a41c35caa2439444",
+                "sha256:dd5bc775c073cc5620524aaab395b1bcabe4818a0839c6169d6594905b5fad56",
+                "sha256:e863111ba3a2a198c328ceedd04598b895c21647ea5442a5d868c6738cac3e80",
+                "sha256:e8add610ff55c5d84d59296af2fcc61197be9406d5a264e183eacb8acd1525d7",
+                "sha256:ed39aac4f533f8d9a09e8d8f7ef3e02d5af84e430e5d1cb7f55057cd9311809b",
+                "sha256:f22cf2932bdebe37138471348534ee36a1424efaf71ae4d23f032924d043e406",
+                "sha256:fa9329167261dfda91cd1955dd07e810ce5cf9d29b569d7315d2e12b8ee8f219"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==2025.2.1"
         },
         "robotpy-cli": {
             "hashes": [

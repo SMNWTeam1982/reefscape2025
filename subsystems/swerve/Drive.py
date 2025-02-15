@@ -5,14 +5,16 @@
 #
 import wpimath.units
 import math
-import wpilib
 import wpimath.geometry
+from wpilib import Field2d
 import wpimath.kinematics
 from . import SwerveModule
 from phoenix6 import hardware as ctre
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
 import robotpy_apriltag
+from pathplannerlib.util import DriveFeedforwards
+from pathplannerlib.logging import PathPlannerLogging
 
 from wpimath.estimator import SwerveDrive4PoseEstimator
 
@@ -29,11 +31,11 @@ class DriveConstants:
     BACK_LEFT_LOCATION = wpimath.geometry.Translation2d(-0.2635, 0.2635)
     BACK_RIGHT_LOCATION = wpimath.geometry.Translation2d(-0.2635, -0.2635)
 
-    CAMERA_POSITION_RELATIVE_TO_ROBOT = wpimath.geometry.Pose3d.fromFeet(
-        wpimath.units.metersToFeet(0.0),
-        wpimath.units.metersToFeet(0.0),
-        wpimath.units.metersToFeet(0.0),
-        wpimath.geometry.Rotation3d.fromDegrees(0.0,0.0,0.0)
+    CAMERA_POSITION_RELATIVE_TO_ROBOT = wpimath.geometry.Transform3d(
+        wpimath.units.inchesToMeters(15.0),
+        0.0,
+        wpimath.units.inchesToMeters(5.0),
+        wpimath.geometry.Rotation3d.fromDegrees(0.0,11.0,3.5)
     )
 
 class Drivetrain:
@@ -42,15 +44,14 @@ class Drivetrain:
     """
 
     def __init__(self) -> None:
-        self.frontLeft = SwerveModule.Wheel(3,4,2)
-        self.frontRight = SwerveModule.Wheel(5,6,1) # copied from 2024
-        self.backLeft = SwerveModule.Wheel(1,2,3)
-        self.backRight = SwerveModule.Wheel(7,8,4)
         
-        self.gyro = ctre.pigeon2.Pigeon2(0) # copied from 2024
+        self.frontLeft = SwerveModule.Wheel(7,8,4)
+        self.frontRight = SwerveModule.Wheel(1,2,3)
+        self.backLeft = SwerveModule.Wheel(5,4,1)
+        self.backRight = SwerveModule.Wheel(3,6,2)
+        
+        self.gyro = ctre.pigeon2.Pigeon2(0)
 
-        # unsure if kinematics is constant so I keep here - zach
-        # took me far too long to figure you were using the wrong constants - kay
         self.kinematics = wpimath.kinematics.SwerveDrive4Kinematics(
             DriveConstants.FRONT_LEFT_LOCATION,
             DriveConstants.FRONT_RIGHT_LOCATION,
@@ -60,16 +61,14 @@ class Drivetrain:
 
         self.gyro.set_yaw(0)
 
-        self.camera = PhotonCamera("Camera_Module_v1")
+        self.cam = PhotonCamera('limelight-front')
 
         self.photonVisionPoseEstimator = PhotonPoseEstimator(
-            robotpy_apriltag.loadAprilTagLayoutField(robotpy_apriltag.AprilTagField.k2025Reefscape),
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            robotpy_apriltag.AprilTagFieldLayout.loadField(robotpy_apriltag.AprilTagField.kDefaultField),
+            PoseStrategy.LOWEST_AMBIGUITY,
             self.cam,
             DriveConstants.CAMERA_POSITION_RELATIVE_TO_ROBOT
         )
-
-        self.photonVisionPoseEstimator.update(self.camera.getLatestResult())
 
         self.poseEstimator = SwerveDrive4PoseEstimator(
             self.kinematics,
@@ -80,19 +79,20 @@ class Drivetrain:
                 self.backLeft.getPosition(),
                 self.backRight.getPosition(),
             ),
-            self.photonVisionPoseEstimator.lastPose.toPose2d(),
+            wpimath.geometry.Pose2d(),
             # closer to 0 is more trust
-            (0.1,0.1,0.1), # trust swerve module data slightly less
-            (0.09,0.09,0.09) # trust vision data slightly more
+            (0.1,0.1,0.1), # trust swerve module data slightly less, except for gyro
+            (0.09,0.09,1) # trust vision data slightly more
         )
 
+        self.field = Field2d()
+        SmartDashboard.putData("Field", self.field)
 
-    def driveWithChassisSpeeds(self,speeds: wpimath.kinematics.ChassisSpeeds):
+    def driveWithChassisSpeeds(self,speeds: wpimath.kinematics.ChassisSpeeds,feeds: DriveFeedforwards):
         self.drive(
             speeds.vx,
             speeds.vy,
-            speeds.omega,
-            False
+            speeds.omega
         )
 
     def drive(
@@ -100,7 +100,6 @@ class Drivetrain:
         xSpeed: float, # meters per second
         ySpeed: float, # meters per second
         rotation: float, # radians per second
-        fieldRelative: bool
     ) -> None:
         """
         Method to drive the robot using joystick info.
@@ -108,18 +107,14 @@ class Drivetrain:
         :param ySpeed: Speed of the robot in the y direction (sideways).
         :param rot: Angular rate of the robot.
         """
-
-        speeds = wpimath.kinematics.ChassisSpeeds(xSpeed,ySpeed,rotation)
-        
-        if fieldRelative:
-            speeds = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
-                xSpeed, ySpeed, rotation, wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value)
-            )
-        
         swerveModuleStates = self.kinematics.toSwerveModuleStates(
             wpimath.kinematics.ChassisSpeeds.discretize(
-                speeds,
-                0.02, # this number comes from the TimedRobot default period
+                (
+                    wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
+                        xSpeed, ySpeed, rotation, wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value)
+                    )
+                ),
+                0.02,
             )
         )
         
@@ -141,15 +136,7 @@ class Drivetrain:
                 swerveModuleStates[3].angle.radians(),swerveModuleStates[3].speed
             ]
         )
-
     def updatePoseEstimation(self) -> None:
-        cameraResult = self.camera.getLatestResult()
-        self.photonVisionPoseEstimator.update(cameraResult)
-
-        self.poseEstimator.addVisionMeasurement(
-            self.photonVisionPoseEstimator.lastPose.toPose2d(),
-            cameraResult.getTimestamp()
-        )
 
         self.poseEstimator.update(
             wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value),
@@ -160,6 +147,11 @@ class Drivetrain:
                 self.backRight.getPosition(),
             )
         )
+
+        result = self.photonVisionPoseEstimator.update(self.cam.getLatestResult())
+        if result:
+            self.poseEstimator.addVisionMeasurement(result.estimatedPose.toPose2d(),result.timestampSeconds)
+
     def getPose(self) -> wpimath.geometry.Pose2d:
         return self.poseEstimator.getEstimatedPosition() # we will get the robot pose from vision
     def resetPose(self,pose: wpimath.geometry.Pose2d):
@@ -213,6 +205,18 @@ class Drivetrain:
                 moduleStates[3].angle.radians(),moduleStates[3].speed
             ]
         )
+
+        #PathPlannerLogging.setLogCurrentPoseCallback(lambda pose: self.field.setRobotPose(pose))
+        #PathPlannerLogging.setLogTargetPoseCallback(lambda pose: self.field.getObject("target pose").setPose(pose))
+        #PathPlannerLogging.setLogActivePathCallback(lambda poses: self.field.getObject("path").setPoses(poses))
+
+        #SmartDashboard.putData("robot pose",self.poseEstimator.getEstimatedPosition())
+        pose = self.poseEstimator.getEstimatedPosition()
+        SmartDashboard.putNumber("x",pose.x)
+        SmartDashboard.putNumber("y",pose.y)
+        self.field.setRobotPose(pose)
+        
+        SmartDashboard.putBoolean("targets",self.cam.getLatestResult().hasTargets())
 
         # SmartDashboard.putData(
         #     "module positions",
