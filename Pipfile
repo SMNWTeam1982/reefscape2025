@@ -4,12 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-robotpy = "*"
 wpilib = "*"
 rev = "*"
 robotpy-rev = "*"
 phoenix6 = "*"
 robotpy-pathplannerlib = "*"
+robotpy = "*"
 photonlibpy = "*"
 
 [dev-packages]
