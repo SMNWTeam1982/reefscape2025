@@ -9,8 +9,8 @@ rev = "*"
 robotpy-rev = "*"
 phoenix6 = "*"
 robotpy-pathplannerlib = "*"
-robotpy = "*"
 photonlibpy = "*"
+robotpy = "*"
 
 [dev-packages]
 

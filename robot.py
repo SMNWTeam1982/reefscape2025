@@ -21,7 +21,7 @@ class MyRobot(wpilib.TimedRobot):
         # We are NOT using this at comp - Kay
         #self.guitar = wpilib.XboxController(1)
         self.operateController = wpilib.XboxController(1)
-        self.auto = auto.SwerveAuto.SwerveAuto(self.drive)
+        self.auto = Auto.SwerveAuto.SwerveAuto(self.drive)
         self.runningReefNavigation = False
 
     def robotPeriodic(self):
@@ -83,13 +83,13 @@ class MyRobot(wpilib.TimedRobot):
             self.deadzone(turn)
         )
         if self.operateController.getAButton():
-            targetPose = auto.ReefNavigator.getNearestLeft()
-            if targetPose.translation().distance(self.drive.getPose().translation()) < auto.ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
+            targetPose = ReefNavigator.getNearestLeft()
+            if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
                 self.auto.generatePathToPose(targetPose)
                 self.runningReefNavigation = True
         if self.operateController.getBButton():
-            targetPose = auto.ReefNavigator.getNearestRight()
-            if targetPose.translation().distance(self.drive.getPose().translation()) < auto.ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
+            targetPose = ReefNavigator.getNearestRight()
+            if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
                 self.auto.generatePathToPose(targetPose)
                 self.runningReefNavigation = True
     
