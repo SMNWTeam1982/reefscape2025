@@ -25,10 +25,10 @@ class IntakeConstants:
     LEVEL_4_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
     INTAKE_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
 
-    CORAL_WIRST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
+    CORAL_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
+    CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
 
     CORAL_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER = math.pi/20 # Feb 15 2025
-    
 
     ALGAE_WRIST_INTAKE_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
     ALGAE_WRIST_EJECT_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
@@ -167,12 +167,25 @@ class Intake:
         self.coralIntakeState = IntakeState.Out
         self.suspendTask()
  
-
     def setL4(self):
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_STOW_POSITION
         self.coralWristTarget = IntakeConstants.LEVEL_4_CORAL_WRIST_POSITION
         self.algaeIntakeState = IntakeState.Hold
         self.coralIntakeState = IntakeState.Out
+        self.suspendTask()
+    
+    def setHighAlgae(self):
+        self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_INTAKE_POSITION
+        self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
+        self.algaeIntakeState = IntakeState.In
+        self.coralIntakeState = IntakeState.Hold
+        self.suspendTask()
+    
+    def setProcessor(self):
+        self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_EJECT_POSITION
+        self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
+        self.algaeIntakeState = IntakeState.Out
+        self.coralIntakeState = IntakeState.Hold
         self.suspendTask()
  
     def setStation(self):
@@ -181,6 +194,14 @@ class Intake:
         self.algaeIntakeState = IntakeState.Hold
         self.coralIntakeState = IntakeState.In
         self.suspendTask()
+    
+    def setIdle(self):
+        self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_STOW_POSITION
+        self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
+        self.algaeIntakeState = IntakeState.Hold
+        self.coralIntakeState = IntakeState.Hold
+        self.suspendTask()
+
  
     
  

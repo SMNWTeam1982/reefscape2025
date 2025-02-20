@@ -4,6 +4,7 @@ import wpimath.kinematics
 import wpimath
 from subsystems.swerve import Drive
 from subsystems.auto import Auto, ReefNavigator
+from subsystems.elevator import Elevator
 # from photonlibpy.photonPoseEstimator import PoseStrategy
 # from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
@@ -17,10 +18,13 @@ kRobotToCam = wpimath.geometry.Transform3d(
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.drive = Drive.Drivetrain()
+        self.elevator = Elevator.Elevator()
         self.driveController = wpilib.XboxController(0)
         # We are NOT using this at comp - Kay
         #self.guitar = wpilib.XboxController(1)
         self.operateController = wpilib.XboxController(1)
+
+
         self.auto = Auto.SwerveAuto(self.drive)
         self.runningReefNavigation = False
 
@@ -47,13 +51,33 @@ class MyRobot(wpilib.TimedRobot):
         pass
     def teleopPeriodic(self):
 
-        # put operator controls above this if stanement
+       
+
+        if self.operateController.getButton(1):
+            self.elevator.setL1()
+        if self.operateController.getButton(2):
+            self.elevator.setL2()
+        if self.operateController.getButton(3):
+            self.elevator.setL3()
+        if self.operateController.getButton(4):
+            self.elevator.setL4()
+        if self.operateController.getButton(5):
+            self.elevator.setHighAlgae()
+        if self.operateController.getButton(6):
+            self.elevator.setProcessor()
+        if self.operateController.getButton(7):
+            self.elevator.setStation()
+        if self.operateController.getButton(8):
+            self.elevator.setIdle()
+
+        
+        # ---------- put operator controls above this line --------------------
 
         if self.runningReefNavigation:
-            if self.auto.runAuto():
+            if self.auto.runAuto(): # check if its done and end nav when it is
                 self.runningReefNavigation = False
             else:
-                return
+                return # dont let the driver have control while nav is runnig
 
 
 
@@ -82,13 +106,13 @@ class MyRobot(wpilib.TimedRobot):
             self.deadzone(y),
             self.deadzone(turn)
         )
-        if self.operateController.getAButton():
-            targetPose = ReefNavigator.getNearestLeft()
+        if self.driveController.getAButton():
+            targetPose = ReefNavigator.getNearestLeft(self.drive.getPose())
             if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
                 self.auto.generatePathToPose(targetPose)
                 self.runningReefNavigation = True
-        if self.operateController.getBButton():
-            targetPose = ReefNavigator.getNearestRight()
+        if self.driveController.getBButton():
+            targetPose = ReefNavigator.getNearestRight(self.drive.getPose())
             if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
                 self.auto.generatePathToPose(targetPose)
                 self.runningReefNavigation = True

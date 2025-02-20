@@ -78,3 +78,38 @@ class Elevator:
             return
         if self.targetHeight == ElevatorConstants.INTAKING_TARGET_HEIGHT:
             self.intake.runIntakeEject()
+        elif self.intake.runIntakesTimed(): # will run the intakes and check if they are done
+            self.targetHeight = ElevatorConstants.IDLE_TARGET_HEIGHT
+            self.intake.setIdle() # ensure that once intake is done that you set it back to idle mode
+    
+    def setL1(self):
+        self.targetHeight = ElevatorConstants.LEVEL_1_TARGET_HEIGHT
+        self.intake.setL1()
+    
+    def setL2(self):
+        self.targetHeight = ElevatorConstants.LEVEL_2_TARGET_HEIGHT
+        self.intake.setL2()
+    
+    def setL3(self):
+        self.targetHeight = ElevatorConstants.LEVEL_3_TARGET_HEIGHT
+        self.intake.setL3()
+    
+    def setL4(self):
+        self.targetHeight = ElevatorConstants.LEVEL_4_TARGET_HEIGHT
+        self.intake.setL4()
+
+    def setHighAlgae(self):
+        self.targetHeight = ElevatorConstants.ALGAE_2_TARGET_HEIGHT
+        self.intake.setHighAlgae()
+    
+    def setProcessor(self):
+        self.targetHeight = ElevatorConstants.PROCESSOR_TARGET_HEIGHT
+        self.intake.setProcessor()
+    
+    def setStation(self):
+        self.targetHeight = ElevatorConstants.INTAKING_TARGET_HEIGHT
+        self.intake.setStation()
+        
+    def setIdle(self):
+        self.targetHeight = ElevatorConstants.IDLE_TARGET_HEIGHT
+        self.intake.setIdle()
