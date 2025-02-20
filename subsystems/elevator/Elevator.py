@@ -33,7 +33,7 @@ class ElevatorConstants:
     ALTITUDE_INTEGRAL_GAIN = 0.0
     ALTITUDE_DERIVATIVE_GAIN = 0.0
 
-    POSITION_TO_ELEVATOR_HEIGHT_MULTIPLIER = 1.0
+    MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_MULTIPLIER = ((1.0 / 25.0) * 360.0) / 1811.0 # estimate from Feb 19 2025
     POSITION_TO_ELEVATOR_HEIGHT_OFFSET = 0.0
 
 class Elevator:
@@ -50,9 +50,15 @@ class Elevator:
             ElevatorConstants.ALTITUDE_DERIVATIVE_GAIN
         )
 
+        self.zer0AltitudeEncoders()
+
         self.intake = Intake()
 
         self.targetHeight = ElevatorConstants.IDLE_TARGET_HEIGHT
+
+    def zer0AltitudeEncoders(self):
+        self.leftAltitudeEncoder.setPosition(0.0)
+        self.rightAltitudeEncoder.setPosition(0.0)
 
     def getElevatorHeight(self) -> wpimath.units.meters:
         # one of these positions will need to be negated before adding, we dont know which one yet
@@ -109,7 +115,7 @@ class Elevator:
     def setStation(self):
         self.targetHeight = ElevatorConstants.INTAKING_TARGET_HEIGHT
         self.intake.setStation()
-        
+
     def setIdle(self):
         self.targetHeight = ElevatorConstants.IDLE_TARGET_HEIGHT
         self.intake.setIdle()
