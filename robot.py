@@ -5,6 +5,7 @@ import wpimath
 from subsystems.swerve import Drive
 from subsystems.auto import Auto, ReefNavigator
 from subsystems.elevator import Elevator
+from subsystems.climber import Climber
 # from photonlibpy.photonPoseEstimator import PoseStrategy
 # from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
@@ -19,10 +20,11 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.drive = Drive.Drivetrain()
         self.elevator = Elevator.Elevator()
+        self.climber = Climber.Climber()
         self.driveController = wpilib.XboxController(0)
         # We are NOT using this at comp - Kay
         #self.guitar = wpilib.XboxController(1)
-        self.operateController = wpilib.XboxController(1)
+        self.operatorController = wpilib.XboxController(1)
 
 
         self.auto = Auto.SwerveAuto(self.drive)
@@ -38,10 +40,10 @@ class MyRobot(wpilib.TimedRobot):
         #     )
         self.drive.displayTelemetry()
 
-        if self.driveController.getAButton():
-            self.drive.displayDrivePID()
-        if self.driveController.getBButton():
-            self.drive.updateDrivePIDs()
+        #if self.driveController.getAButton():
+            #self.drive.displayDrivePID()
+        #if self.driveController.getBButton():
+            #self.drive.updateDrivePIDs()
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
@@ -50,26 +52,51 @@ class MyRobot(wpilib.TimedRobot):
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
-
+        # Cooldown stuff to prevent things from exploding, probably not done well
+        self.elevatorTimer = wpilib.Timer()
+        self.climberTimer = wpilib.Timer()
        
+        if (self.elevatorTimer.get() < 2):
+            if self.operatorController.getButton(1):
+                self.elevator.setL1()
+                self.elevatorTimer.start()
+            if self.operatorController.getButton(2):
+                self.elevator.setL2()
+                self.elevatorTimer.start()
+            if self.operatorController.getButton(3):
+                self.elevator.setL3()
+                self.elevatorTimer.start()
+            if self.operatorController.getButton(4):
+                self.elevator.setL4()
+                self.elevatorTimer.start()
+            if self.operatorController.getButton(5):
+                self.elevator.setHighAlgae()
+                self.elevatorTimer.start()
+            if self.operatorController.getButton(6):
+                self.elevator.setProcessor()
+                self.elevatorTimer.start()
+            if self.operatorController.getButton(7):
+                self.elevator.setStation()
+                self.elevatorTimer.start()
+            if self.operatorController.getButton(8):
+                self.elevator.setIdle()
+                self.elevatorTimer.start()
+        elif (self.elevatorTimer.get() > 2):
+            self.elevatorTimer.stop()
+            self.elevatorTimer.reset()
 
-        if self.operateController.getButton(1):
-            self.elevator.setL1()
-        if self.operateController.getButton(2):
-            self.elevator.setL2()
-        if self.operateController.getButton(3):
-            self.elevator.setL3()
-        if self.operateController.getButton(4):
-            self.elevator.setL4()
-        if self.operateController.getButton(5):
-            self.elevator.setHighAlgae()
-        if self.operateController.getButton(6):
-            self.elevator.setProcessor()
-        if self.operateController.getButton(7):
-            self.elevator.setStation()
-        if self.operateController.getButton(8):
-            self.elevator.setIdle()
+        if (self.climberTimer.get() < self.climber.CLIMBER_COOLDOWN):
+            if self.operatorController.getRightBumper():
+                self.climber.setRaised()
+                self.climberTimer.start()
+        
+            if self.operatorController.getLeftBumper():
+                self.climber.setLowered()
+                self.climberTimer.start()
 
+        elif (self.climberTimer.get() > self.climber.CLIMBER_COOLDOWN):
+            self.climberTimer.stop()
+            self.climberTimer.reset()
         
         # ---------- put operator controls above this line --------------------
 
