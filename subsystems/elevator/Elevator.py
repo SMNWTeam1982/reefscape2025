@@ -33,7 +33,8 @@ class ElevatorConstants:
     ALTITUDE_INTEGRAL_GAIN = 0.0
     ALTITUDE_DERIVATIVE_GAIN = 0.0
 
-    MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_MULTIPLIER = ((1.0 / 25.0) * 360.0) / 1811.0 # estimate from Feb 19 2025
+    MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_MULTIPLIER = (((1.0 / 25.0) * 360.0) / 1811.0) * wpimath.units.inchesToMeters(55) + wpimath.units.inchesToMeters(1.75) # estimate from Feb 19 2025
+    
     POSITION_TO_ELEVATOR_HEIGHT_OFFSET = 0.0
 
 class Elevator:
