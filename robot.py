@@ -26,6 +26,8 @@ class MyRobot(wpilib.TimedRobot):
         #self.guitar = wpilib.XboxController(1)
         self.operatorController = wpilib.XboxController(1)
 
+        self.elevatorTimer = wpilib.Timer()
+        self.climberTimer = wpilib.Timer()
 
         self.auto = Auto.SwerveAuto(self.drive)
         self.runningReefNavigation = False
@@ -53,10 +55,8 @@ class MyRobot(wpilib.TimedRobot):
         pass
     def teleopPeriodic(self):
         # Cooldown stuff to prevent things from exploding, probably not done well
-        self.elevatorTimer = wpilib.Timer()
-        self.climberTimer = wpilib.Timer()
        
-        if (self.elevatorTimer.get() < 2):
+        if (self.elevatorTimer.get() < 1):
             if self.operatorController.getButton(1):
                 self.elevator.setL1()
                 self.elevatorTimer.start()
@@ -81,16 +81,16 @@ class MyRobot(wpilib.TimedRobot):
             if self.operatorController.getButton(8):
                 self.elevator.setIdle()
                 self.elevatorTimer.start()
-        elif (self.elevatorTimer.get() > 2):
+        else:
             self.elevatorTimer.stop()
             self.elevatorTimer.reset()
 
         if (self.climberTimer.get() < self.climber.CLIMBER_COOLDOWN):
-            if self.operatorController.getRightBumper():
+            if self.driveController.getRightBumper():
                 self.climber.setRaised()
                 self.climberTimer.start()
         
-            if self.operatorController.getLeftBumper():
+            if self.driveController.getLeftBumper():
                 self.climber.setLowered()
                 self.climberTimer.start()
 
