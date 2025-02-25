@@ -21,29 +21,29 @@ class IntakeConstants:
     ALGAE_INTAKE_MAX_SPEED = 0.2
 
     LEVEL_1_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
-    LEVEL_MID_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
-    LEVEL_4_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
-    INTAKE_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
+    LEVEL_MID_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-10)
+    LEVEL_4_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-20)
+    INTAKE_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(35)
 
-    CORAL_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
-    CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
+    CORAL_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-5)
+    CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(40) # stow up
 
     CORAL_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER = math.pi/20 # Feb 15 2025
 
     ALGAE_WRIST_INTAKE_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
-    ALGAE_WRIST_EJECT_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
-    ALGAE_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
+    ALGAE_WRIST_EJECT_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-2)
+    ALGAE_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-5)
 
-    ALGAE_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
+    ALGAE_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-10)
     
     ALGAE_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER = math.pi/20 # Feb 15 2025
 
 
-    CORAL_WRIST_PROPORTIONAL_GAIN = 1.0
+    CORAL_WRIST_PROPORTIONAL_GAIN = 0.2
     CORAL_WRIST_INTEGRAL_GAIN = 0.0
     CORAL_WRIST_DERIVATIVE_GAIN = 0.0
 
-    ALGAE_WRIST_PROPORTIONAL_GAIN = 1.0
+    ALGAE_WRIST_PROPORTIONAL_GAIN = 0.2
     ALGAE_WRIST_INTEGRAL_GAIN = 0.0
     ALGAE_WRIST_DERIVATIVE_GAIN = 0.0
 
@@ -72,7 +72,6 @@ class Intake:
             IntakeConstants.CORAL_WRIST_DERIVATIVE_GAIN,
             IntakeConstants.CORAL_WRIST_INTEGRAL_GAIN
         )
-        self.coralWristController.set
 
         self.algaeWristController = wpimath.controller.PIDController(
             IntakeConstants.ALGAE_WRIST_PROPORTIONAL_GAIN,
@@ -81,7 +80,7 @@ class Intake:
         )
 
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_STARTING_POSITION
-        self.coralWristTarget = IntakeConstants.CORAL_WIRST_STARTING_POSITION
+        self.coralWristTarget = IntakeConstants.CORAL_WRIST_STARTING_POSITION
 
         self.algaeIntakeState = IntakeState.Hold
         self.coralIntakeState = IntakeState.Hold

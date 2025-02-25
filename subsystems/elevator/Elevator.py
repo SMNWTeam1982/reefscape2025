@@ -16,26 +16,25 @@ import wpimath.units
 from Intake import Intake
 from Intake import IntakeState
 class ElevatorConstants:
-    LEVEL_1_TARGET_HEIGHT = 0.0
-    LEVEL_2_TARGET_HEIGHT = 0.0
-    LEVEL_3_TARGET_HEIGHT = 0.0
-    LEVEL_4_TARGET_HEIGHT = 0.0
+    LEVEL_1_TARGET_HEIGHT = 0.1
+    LEVEL_2_TARGET_HEIGHT = 0.5
+    LEVEL_3_TARGET_HEIGHT = 1.0
+    LEVEL_4_TARGET_HEIGHT = 1.4
 
-    ALGAE_2_TARGET_HEIGHT = 0.0
+    ALGAE_2_TARGET_HEIGHT = 1.2
 
-    PROCESSOR_TARGET_HEIGHT = 0.0
+    PROCESSOR_TARGET_HEIGHT = 0.01
 
-    INTAKING_TARGET_HEIGHT = 0.0
+    INTAKING_TARGET_HEIGHT = 0.01
 
-    IDLE_TARGET_HEIGHT = 0.0
+    IDLE_TARGET_HEIGHT = 0.02
 
     ALTITUDE_PROPORTIONAL_GAIN = 1.0
     ALTITUDE_INTEGRAL_GAIN = 0.0
     ALTITUDE_DERIVATIVE_GAIN = 0.0
 
     MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_MULTIPLIER = (((1.0 / 25.0) * 360.0) / 1811.0) * wpimath.units.inchesToMeters(55) + wpimath.units.inchesToMeters(1.75) # estimate from Feb 19 2025
-    
-    POSITION_TO_ELEVATOR_HEIGHT_OFFSET = 0.0
+    ELEVATOR_MAX_HEIGHT = wpimath.units.inchesToMeters(55) + wpimath.units.inchesToMeters(1.75) # 1.44145 meters
 
 class Elevator:
     def __init__(self):

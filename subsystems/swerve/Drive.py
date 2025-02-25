@@ -23,8 +23,10 @@ from wpilib import SmartDashboard
 
 class DriveConstants:
     # this is the physical max speed not a speed limit
-    MAX_SPEED_METERS_PER_SECOND = 3.8 # speed at 12 Volts, Jan 18 2025
-    
+    PHYSICAL_MAX_SPEED_METERS_PER_SECOND = 3.8 # speed at 12 Volts, Jan 18 2025
+
+    SPEED_CAP_METERS_PER_SECOND = 2.5 # arbitrary cap
+
     # translation values taken from 2024 code
     FRONT_LEFT_LOCATION = wpimath.geometry.Translation2d(0.2635, 0.2635)
     FRONT_RIGHT_LOCATION = wpimath.geometry.Translation2d(0.2635, -0.2635)
@@ -114,13 +116,13 @@ class Drivetrain:
                         xSpeed, ySpeed, rotation, wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value)
                     )
                 ),
-                0.02,
+                0.02, # default period
             )
         )
         
         wpimath.kinematics.SwerveDrive4Kinematics.desaturateWheelSpeeds(
-            swerveModuleStates, DriveConstants.MAX_SPEED_METERS_PER_SECOND
-        )
+            swerveModuleStates, DriveConstants.SPEED_CAP_METERS_PER_SECOND
+        ) # cap speed
         
         self.frontLeft.setDesiredState(swerveModuleStates[0])
         self.frontRight.setDesiredState(swerveModuleStates[1])
@@ -136,6 +138,24 @@ class Drivetrain:
                 swerveModuleStates[3].angle.radians(),swerveModuleStates[3].speed
             ]
         )
+
+        currentStates = [
+            self.frontLeft.getState(),
+            self.frontRight.getState(),
+            self.backLeft.getState(),
+            self.backRight.getState()
+        ]
+
+        SmartDashboard.putNumberArray(
+            "Current Module States",
+            [
+                currentStates[0].angle.radians(),currentStates[0].speed,
+                currentStates[1].angle.radians(),currentStates[1].speed,
+                currentStates[2].angle.radians(),currentStates[2].speed,
+                currentStates[3].angle.radians(),currentStates[3].speed
+            ]
+        )
+
     def updatePoseEstimation(self) -> None:
 
         self.poseEstimator.update(
@@ -148,12 +168,18 @@ class Drivetrain:
             )
         )
 
-        result = self.photonVisionPoseEstimator.update(self.cam.getLatestResult())
+        camResult = self.cam.getLatestResult()
+
+        result = self.photonVisionPoseEstimator.update(camResult)
         if result:
             self.poseEstimator.addVisionMeasurement(result.estimatedPose.toPose2d(),result.timestampSeconds)
 
+        self.field.setRobotPose(self.poseEstimator.getEstimatedPosition())
+        SmartDashboard.putBoolean("target aquired",camResult.hasTargets())
+
     def getPose(self) -> wpimath.geometry.Pose2d:
         return self.poseEstimator.getEstimatedPosition() # we will get the robot pose from vision
+    
     def resetPose(self,pose: wpimath.geometry.Pose2d):
         self.poseEstimator.resetPosition(
             wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value),
@@ -173,104 +199,30 @@ class Drivetrain:
             self.backRight.getState()
         ]
         return self.kinematics.toChassisSpeeds(moduleStates)
-    
-    def displayTelemetry(self) -> None:
-        SmartDashboard.putNumber("gyro angle",math.radians(self.gyro.get_yaw().value))
-
-        SmartDashboard.putNumber("front left angle error",self.frontLeft.turningPIDController.getPositionError())# self.frontLeft.getPosition().angle.degrees())
-        #SmartDashboard.putNumber("front left velocity error",self.frontLeft.drivePIDController.getPositionError())
-        
-        SmartDashboard.putNumber("front right angle error",self.frontRight.turningPIDController.getPositionError())# self.frontRight.getPosition().angle.degrees())
-        #SmartDashboard.putNumber("front right velocity error",self.frontRight.drivePIDController.getPositionError())
-        
-        SmartDashboard.putNumber("back left angle error",self.backLeft.turningPIDController.getPositionError())# self.backLeft.getPosition().angle.degrees())
-        #SmartDashboard.putNumber("back left velocity error",self.backLeft.drivePIDController.getPositionError())
-        
-        SmartDashboard.putNumber("back right angle error",self.backRight.turningPIDController.getPositionError())# self.backRight.getPosition().angle.degrees())
-        #SmartDashboard.putNumber("back right velocity error",self.backRight.drivePIDController.getPositionError())
-        
-        moduleStates = [
-            self.frontLeft.getState(),
-            self.frontRight.getState(),
-            self.backLeft.getState(),
-            self.backRight.getState()
-        ]
-
-        SmartDashboard.putNumberArray(
-            "Module States",
-            [
-                moduleStates[0].angle.radians(),moduleStates[0].speed,
-                moduleStates[1].angle.radians(),moduleStates[1].speed,
-                moduleStates[2].angle.radians(),moduleStates[2].speed,
-                moduleStates[3].angle.radians(),moduleStates[3].speed
-            ]
-        )
-
-        #PathPlannerLogging.setLogCurrentPoseCallback(lambda pose: self.field.setRobotPose(pose))
-        #PathPlannerLogging.setLogTargetPoseCallback(lambda pose: self.field.getObject("target pose").setPose(pose))
-        #PathPlannerLogging.setLogActivePathCallback(lambda poses: self.field.getObject("path").setPoses(poses))
-
-        #SmartDashboard.putData("robot pose",self.poseEstimator.getEstimatedPosition())
-        pose = self.poseEstimator.getEstimatedPosition()
-        SmartDashboard.putNumber("x",pose.x)
-        SmartDashboard.putNumber("y",pose.y)
-        self.field.setRobotPose(pose)
-        
-        SmartDashboard.putBoolean("targets",self.cam.getLatestResult().hasTargets())
-
-        # SmartDashboard.putData(
-        #     "module positions",
-        #     [
-        #         self.frontLeft.getPosition(),
-        #         self.frontRight.getPosition(),
-        #         self.backLeft.getPosition(),
-        #         self.backRight.getPosition()
-        #     ]
-        # )
-
-        SmartDashboard.putNumberArray(
-            "velocity errors",
-            [
-                self.frontLeft.drivePIDController.getPositionError(),
-                self.frontRight.drivePIDController.getPositionError(),
-                self.backLeft.drivePIDController.getPositionError(),
-                self.backRight.drivePIDController.getPositionError()
-            ]
-        )
-        
-        SmartDashboard.putNumberArray(
-            "velocities",
-            [
-                self.frontLeft.getState().speed,
-                self.frontRight.getState().speed,
-                self.backLeft.getState().speed,
-                self.backRight.getState().speed
-            ]
-        )
 
     def displayTurnPID(self):
-        SmartDashboard.putNumber("p",self.frontLeft.turningPIDController.getP())
-        SmartDashboard.putNumber("i",self.frontLeft.turningPIDController.getI())
-        SmartDashboard.putNumber("d",self.frontLeft.turningPIDController.getD())
+        SmartDashboard.putNumber("turn p",self.frontLeft.turningPIDController.getP())
+        SmartDashboard.putNumber("turn i",self.frontLeft.turningPIDController.getI())
+        SmartDashboard.putNumber("turn d",self.frontLeft.turningPIDController.getD())
     
     def updateTurnPIDs(self):
-        p = SmartDashboard.getNumber("p",self.frontLeft.turningPIDController.getP())
-        i = SmartDashboard.getNumber("i",self.frontLeft.turningPIDController.getI())
-        d = SmartDashboard.getNumber("d",self.frontLeft.turningPIDController.getD())
+        p = SmartDashboard.getNumber("turn p",self.frontLeft.turningPIDController.getP())
+        i = SmartDashboard.getNumber("turn i",self.frontLeft.turningPIDController.getI())
+        d = SmartDashboard.getNumber("turn d",self.frontLeft.turningPIDController.getD())
 
         self.frontLeft.updateTurnPID(p,i,d)
         self.frontRight.updateTurnPID(p,i,d)
         self.backLeft.updateTurnPID(p,i,d)
         self.backRight.updateTurnPID(p,i,d)
     def displayDrivePID(self):
-        SmartDashboard.getNumber("p",self.frontLeft.drivePIDController.getP())
-        SmartDashboard.getNumber("i",self.frontLeft.drivePIDController.getI())
-        SmartDashboard.getNumber("d",self.frontLeft.drivePIDController.getD())
+        SmartDashboard.getNumber("drive p",self.frontLeft.drivePIDController.getP())
+        SmartDashboard.getNumber("drive i",self.frontLeft.drivePIDController.getI())
+        SmartDashboard.getNumber("drive d",self.frontLeft.drivePIDController.getD())
 
     def updateDrivePIDs(self):
-        p = SmartDashboard.getNumber("p",self.frontLeft.drivePIDController.getP())
-        i = SmartDashboard.getNumber("i",self.frontLeft.drivePIDController.getI())
-        d = SmartDashboard.getNumber("d",self.frontLeft.drivePIDController.getD())
+        p = SmartDashboard.getNumber("drive p",self.frontLeft.drivePIDController.getP())
+        i = SmartDashboard.getNumber("drive i",self.frontLeft.drivePIDController.getI())
+        d = SmartDashboard.getNumber("drive d",self.frontLeft.drivePIDController.getD())
 
         self.frontLeft.updateDrivePID(p,i,d)
         self.frontRight.updateDrivePID(p,i,d)

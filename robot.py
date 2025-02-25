@@ -33,13 +33,6 @@ class MyRobot(wpilib.TimedRobot):
         self.runningReefNavigation = False
 
     def robotPeriodic(self):
-#        camEstPose = self.camPoseEst.update()
-
-        # update pose with this (probably doesnt work)
-        # if camEstPose:
-        #     self.drive.addVisionPoseEstimate(
-        #             camEstPose.estimatedPos, camEstPose.timestampSeconds
-        #     )
         self.drive.displayTelemetry()
 
         #if self.driveController.getAButton():
@@ -54,9 +47,13 @@ class MyRobot(wpilib.TimedRobot):
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
-        # Cooldown stuff to prevent things from exploding, probably not done well
-       
-        if (self.elevatorTimer.get() < 1):
+        # makes it so that you cant quickly change in between elevator states
+
+        if self.elevatorTimer.isRunning():
+            if self.elevatorTimer.get() > 1: # this number is the cooldown between state change
+                self.elevatorTimer.stop()
+                self.elevatorTimer.reset()
+        else:
             if self.operatorController.getButton(1):
                 self.elevator.setL1()
                 self.elevatorTimer.start()
@@ -81,23 +78,12 @@ class MyRobot(wpilib.TimedRobot):
             if self.operatorController.getButton(8):
                 self.elevator.setIdle()
                 self.elevatorTimer.start()
-        else:
-            self.elevatorTimer.stop()
-            self.elevatorTimer.reset()
 
-        if (self.climberTimer.get() < self.climber.CLIMBER_COOLDOWN):
-            if self.driveController.getRightBumper():
-                self.climber.setRaised()
-                self.climberTimer.start()
-        
-            if self.driveController.getLeftBumper():
-                self.climber.setLowered()
-                self.climberTimer.start()
-
-        elif (self.climberTimer.get() > self.climber.CLIMBER_COOLDOWN):
-            self.climberTimer.stop()
-            self.climberTimer.reset()
-        
+        if self.driveController.getRightBumper():
+            self.climber.setRaised()
+        if self.driveController.getLeftBumper():
+            self.climber.setLowered()
+    
         # ---------- put operator controls above this line --------------------
 
         if self.runningReefNavigation:
@@ -106,34 +92,19 @@ class MyRobot(wpilib.TimedRobot):
             else:
                 return # dont let the driver have control while nav is runnig
 
-
+        # ---------- driver controls below this line --------------------------
 
         x = -self.driveController.getLeftX()
         y = self.driveController.getLeftY()
         turn = self.driveController.getRightX()
-        # Unused Guitar code - see above
-        #x=0.0
-        #y=0.0
-        #turn=0.0
-        #if self.guitar.getPOV() == 0:
-            #turn = 1
-        #if self.guitar.getPOV() == 180:
-            #turn = -1
-        #if self.guitar.getAButton():
-            #x+=1
-        #if self.guitar.getBButton():
-            #y-=1
-        #if self.guitar.getXButton():
-            #x-=1
-        #if self.guitar.getYButton():
-            #y+=1
 
         self.drive.drive(
             self.deadzone(x),
             self.deadzone(y),
             self.deadzone(turn)
         )
-        if self.driveController.getAButton():
+
+        if self.driveController.getXButton():
             targetPose = ReefNavigator.getNearestLeft(self.drive.getPose())
             if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
                 self.auto.generatePathToPose(targetPose)
