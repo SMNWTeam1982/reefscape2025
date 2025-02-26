@@ -49,35 +49,22 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
         # makes it so that you cant quickly change in between elevator states
 
-        if self.elevatorTimer.isRunning():
-            if self.elevatorTimer.get() > 1: # this number is the cooldown between state change
-                self.elevatorTimer.stop()
-                self.elevatorTimer.reset()
-        else:
-            if self.operatorController.getButton(1):
-                self.elevator.setL1()
-                self.elevatorTimer.start()
-            if self.operatorController.getButton(2):
-                self.elevator.setL2()
-                self.elevatorTimer.start()
-            if self.operatorController.getButton(3):
-                self.elevator.setL3()
-                self.elevatorTimer.start()
-            if self.operatorController.getButton(4):
-                self.elevator.setL4()
-                self.elevatorTimer.start()
-            if self.operatorController.getButton(5):
-                self.elevator.setHighAlgae()
-                self.elevatorTimer.start()
-            if self.operatorController.getButton(6):
-                self.elevator.setProcessor()
-                self.elevatorTimer.start()
-            if self.operatorController.getButton(7):
-                self.elevator.setStation()
-                self.elevatorTimer.start()
-            if self.operatorController.getButton(8):
-                self.elevator.setIdle()
-                self.elevatorTimer.start()
+        if self.operatorController.getButton(1):
+            self.elevator.setL1()
+        if self.operatorController.getButton(2):
+            self.elevator.setL2()
+        if self.operatorController.getButton(3):
+            self.elevator.setL3()
+        if self.operatorController.getButton(4):
+            self.elevator.setL4()
+        if self.operatorController.getButton(5):
+            self.elevator.setHighAlgae()
+        if self.operatorController.getButton(6):
+            self.elevator.setProcessor()
+        if self.operatorController.getButton(7):
+            self.elevator.setStation()
+        if self.operatorController.getButton(8):
+            self.elevator.setIdle()
 
         if self.driveController.getRightBumper():
             self.climber.setRaised()

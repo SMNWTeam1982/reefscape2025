@@ -79,14 +79,6 @@ class Elevator:
     def runElevator(self):
         self.moveElevator()
         self.intake.runWrists()
-
-        if not self.altitudePIDController.atSetpoint():
-            return
-        if self.targetHeight == ElevatorConstants.INTAKING_TARGET_HEIGHT:
-            self.intake.runIntakeEject()
-        elif self.intake.runIntakesTimed(): # will run the intakes and check if they are done
-            self.targetHeight = ElevatorConstants.IDLE_TARGET_HEIGHT
-            self.intake.setIdle() # ensure that once intake is done that you set it back to idle mode
     
     def setL1(self):
         self.targetHeight = ElevatorConstants.LEVEL_1_TARGET_HEIGHT
@@ -96,17 +88,21 @@ class Elevator:
         self.targetHeight = ElevatorConstants.LEVEL_2_TARGET_HEIGHT
         self.intake.setL2()
     
-    def setL3(self):
+    def setL3Coral(self):
         self.targetHeight = ElevatorConstants.LEVEL_3_TARGET_HEIGHT
         self.intake.setL3()
-    
+        
+    def setL3Algae(self):
+        self.targetHeight = ElevatorConstants.LEVEL_3_TARGET_HEIGHT
+        self.intake.setAlgae()
+
     def setL4(self):
         self.targetHeight = ElevatorConstants.LEVEL_4_TARGET_HEIGHT
         self.intake.setL4()
 
     def setHighAlgae(self):
         self.targetHeight = ElevatorConstants.ALGAE_2_TARGET_HEIGHT
-        self.intake.setHighAlgae()
+        self.intake.setAlgae()
     
     def setProcessor(self):
         self.targetHeight = ElevatorConstants.PROCESSOR_TARGET_HEIGHT
