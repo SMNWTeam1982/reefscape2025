@@ -47,14 +47,13 @@ class MyRobot(wpilib.TimedRobot):
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
-        # makes it so that you cant quickly change in between elevator states
 
         if self.operatorController.getButton(1):
             self.elevator.setL1()
         if self.operatorController.getButton(2):
             self.elevator.setL2()
         if self.operatorController.getButton(3):
-            self.elevator.setL3()
+            self.elevator.setL3Coral()
         if self.operatorController.getButton(4):
             self.elevator.setL4()
         if self.operatorController.getButton(5):
@@ -65,6 +64,8 @@ class MyRobot(wpilib.TimedRobot):
             self.elevator.setStation()
         if self.operatorController.getButton(8):
             self.elevator.setIdle()
+        if self.operatorController.getButton(9):
+            self.elevator.setL3Algae()
 
         if self.driveController.getRightBumper():
             self.climber.setRaised()
@@ -98,6 +99,11 @@ class MyRobot(wpilib.TimedRobot):
                 self.runningReefNavigation = True
         if self.driveController.getBButton():
             targetPose = ReefNavigator.getNearestRight(self.drive.getPose())
+            if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
+                self.auto.generatePathToPose(targetPose)
+                self.runningReefNavigation = True
+        if self.driveController.getAButton():
+            targetPose = ReefNavigator.getNearestL1Setpoint()
             if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
                 self.auto.generatePathToPose(targetPose)
                 self.runningReefNavigation = True

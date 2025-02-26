@@ -35,3 +35,7 @@ class SwerveAuto:
                 self.pathCommand.end(False) # call end manually
             return
         self.pathCommand.execute() # run the command manually
+
+    def generatePathToPose(self,pose: wpimath.geometry.pose2d):
+        self.pathCommand = None # here is where we would generate the path using pathplanner
+        self.pathCommand.initialize()

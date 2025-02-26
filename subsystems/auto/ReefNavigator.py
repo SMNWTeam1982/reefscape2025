@@ -43,6 +43,12 @@ class ReefNavigationConstants:
         EAST_TAG_LEFT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(300)).transformBy(BLUE_REEF_CENTER_POSITION),
     ]
 
+    BLUE_L1_SETPOINTS = [
+        # :>
+    ]
+
+def getNearestL1Setpoint(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2d:
+    robotPos.nearest(ReefNavigationConstants.BLUE_L1_SETPOINTS)
 def getNearestLeft(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2d:
     robotPos.nearest(ReefNavigationConstants.BLUE_LEFT_SETPOINTS)
 def getNearestRight(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2d:
