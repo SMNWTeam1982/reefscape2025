@@ -1,8 +1,10 @@
 from pathplannerlib.auto import AutoBuilder, PathPlannerAuto
-from pathplannerlib.path import PathPlannerPath
+from pathplannerlib.path import PathPlannerPath, PathConstraints
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.config import RobotConfig, PIDConstants
+import wpimath
 from wpilib import DriverStation
+import wpimath.units
 
 from ..swerve.Drive import Drivetrain, DriveConstants
 
@@ -36,6 +38,17 @@ class SwerveAuto:
             return
         self.pathCommand.execute() # run the command manually
 
-    def generatePathToPose(self,pose: wpimath.geometry.pose2d):
-        self.pathCommand = None # here is where we would generate the path using pathplanner
+    def generatePathToPose(self, pose: wpimath.geometry.Pose2d):
+        constraints = PathConstraints(
+            1.0,
+            1.0,
+            wpimath.units.degreesToRadians(540),
+            wpimath.units.degreesToRadians(720)
+        )
+        self.pathCommand = AutoBuilder.pathfindToPose(
+            pose,
+            constraints,
+            goal_end_vel=0.0,
+            rotation_delay_distance=0.0
+        )
         self.pathCommand.initialize()

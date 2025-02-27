@@ -13,8 +13,7 @@ import wpimath.units
 
 
 
-from Intake import Intake
-from Intake import IntakeState
+from . import Intake
 class ElevatorConstants:
     LEVEL_1_TARGET_HEIGHT = 0.1
     LEVEL_2_TARGET_HEIGHT = 0.5
@@ -38,10 +37,10 @@ class ElevatorConstants:
 
 class Elevator:
     def __init__(self):
-        self.leftAltitudeMotor = rev.SparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.leftAltitudeMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
         self.leftAltitudeEncoder = self.leftAltitudeMotor.getEncoder()
 
-        self.rightAltitudeMotor = rev.SparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
+        self.rightAltitudeMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
         self.rightAltitudeEncoder = self.rightAltitudeMotor.getEncoder()
 
         self.altitudePIDController = wpimath.controller.PIDController(
