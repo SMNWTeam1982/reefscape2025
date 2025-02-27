@@ -15,13 +15,14 @@ kRobotToCam = wpimath.geometry.Transform3d(
     wpimath.geometry.Rotation3d.fromDegrees(0, -30, 0)
 )
 
-
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
+        self.powerDistributionModule = wpilib.PowerDistribution(1,wpilib.PowerDistribution.ModuleType.kRev)
         self.drive = Drive.Drivetrain()
-        self.elevator = Elevator.Elevator()
+        self.elevator = Elevator.Elevator(self.powerDistributionModule)
         self.climber = Climber.Climber()
         self.driveController = wpilib.XboxController(0)
+
         # We are NOT using this at comp - Kay
         #self.guitar = wpilib.XboxController(1)
         self.operatorController = wpilib.XboxController(1)
@@ -66,6 +67,8 @@ class MyRobot(wpilib.TimedRobot):
             self.elevator.setIdle()
         if self.operatorController.getButton(9):
             self.elevator.setL3Algae()
+        if self.operatorController.getButton(10):
+            self.elevator.intake.runIntakeEject()
 
         if self.driveController.getRightBumper():
             self.climber.setRaised()
@@ -73,6 +76,10 @@ class MyRobot(wpilib.TimedRobot):
             self.climber.setLowered()
     
         # ---------- put operator controls above this line --------------------
+
+        if self.driveController.getAButton():
+            self.auto.pathCommand.cancel()
+            self.runningReefNavigation = False
 
         if self.runningReefNavigation:
             if self.auto.runAuto(): # check if its done and end nav when it is
@@ -92,17 +99,17 @@ class MyRobot(wpilib.TimedRobot):
             self.deadzone(turn)
         )
 
-        if self.driveController.getXButton():
+        if self.driveController.getXButton(): # set left pos
             targetPose = ReefNavigator.getNearestLeft(self.drive.getPose())
             if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
                 self.auto.generatePathToPose(targetPose)
                 self.runningReefNavigation = True
-        if self.driveController.getBButton():
+        if self.driveController.getBButton(): # set right pos
             targetPose = ReefNavigator.getNearestRight(self.drive.getPose())
             if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
                 self.auto.generatePathToPose(targetPose)
                 self.runningReefNavigation = True
-        if self.driveController.getAButton():
+        if self.driveController.getAButton(): # set L1 pos
             targetPose = ReefNavigator.getNearestL1Setpoint()
             if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
                 self.auto.generatePathToPose(targetPose)

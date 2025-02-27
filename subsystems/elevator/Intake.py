@@ -38,6 +38,11 @@ class IntakeConstants:
     
     ALGAE_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER = math.pi/20 # Feb 15 2025
 
+    ALGAE_PDP_CHANNEL = 10
+    CORAL_PDP_CHANNEL = 11
+    ALGAE_IN_CURRENT_THRESHOLD = 25
+    CORAL_IN_CURRENT_THRESHOLD = 25
+
 
     CORAL_WRIST_PROPORTIONAL_GAIN = 0.2
     CORAL_WRIST_INTEGRAL_GAIN = 0.0
@@ -53,7 +58,9 @@ class IntakeState(enum.Enum):
     Hold = enum.auto
 
 class Intake:
-    def __init__(self):
+    def __init__(self, pdpReference: wpilib.PowerDistribution):
+        self.pdpReference = pdpReference
+
         self.coralWristMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
         self.coralWristEncoder = self.coralWristMotor.getEncoder()
 
@@ -82,8 +89,8 @@ class Intake:
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_STARTING_POSITION
         self.coralWristTarget = IntakeConstants.CORAL_WRIST_STARTING_POSITION
 
-        # self.algaeIntakeState = IntakeState.Hold
-        # self.coralIntakeState = IntakeState.Hold
+        self.algaeIntakeState = IntakeState.Hold
+        self.coralIntakeState = IntakeState.Hold
 
     # returns true if intake/ejection is complete
     # def runIntakesTimed(self) -> bool:
@@ -109,36 +116,38 @@ class Intake:
     #         self.leftAlgaeMotor.stopMotor()
     #         self.rightAlgeaMotor.stopMotor()
     #         return True
-        
+
+    def algaeAllTheWayIn(self) -> bool:
+        return self.pdpReference.getCurrent(IntakeConstants.ALGAE_PDP_CHANNEL) > IntakeConstants.ALGAE_IN_CURRENT_THRESHOLD
 
     def runWrists(self):
         algaeAmount = self.algaeWristController.calculate(
             self.algaeWristEncoder.getPosition() * IntakeConstants.ALGAE_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER,
-            self.algaeWristTarget.radians
+            self.algaeWristTarget.radians()
         )
         coralAmount = self.coralWristController.calculate(
             self.coralWristEncoder.getPosition() * IntakeConstants.CORAL_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER,
-            self.coralWristTarget.radians
+            self.coralWristTarget.radians()
         )
 
         self.algaeWristMotor.set(algaeAmount)
         self.coralWristMotor.set(coralAmount)
 
-    def runIntakeEject(self, coralState: IntakeState, algaeState: IntakeState):
-        if coralState == IntakeState.In:
+    def runIntakeEject(self):
+        if self.coralIntakeState == IntakeState.In:
             self.coralMotor.set(-IntakeConstants.CORAL_INTAKE_MAX_SPEED)
-        if coralState == IntakeState.Out:
+        if self.coralIntakeState == IntakeState.Out:
             self.coralMotor.set(IntakeConstants.CORAL_INTAKE_MAX_SPEED)
-        if coralState == IntakeState.Hold:
+        if self.coralIntakeState == IntakeState.Hold:
             self.coralMotor.set(0.0)
 
-        if algaeState == IntakeState.In:
+        if self.algaeIntakeState == IntakeState.In:
             self.leftAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
             self.rightAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
-        if algaeState == IntakeState.Out:
+        if self.algaeIntakeState == IntakeState.Out:
             self.leftAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
             self.rightAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
-        if algaeState == IntakeState.Hold:
+        if self.algaeIntakeState == IntakeState.Hold:
             self.leftAlgaeMotor.set(0.0)
             self.rightAlgaeMotor.set(0.0)
 
@@ -154,61 +163,55 @@ class Intake:
     def setL1(self):
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_STOW_POSITION
         self.coralWristTarget = IntakeConstants.LEVEL_1_CORAL_WRIST_POSITION
-        # self.algaeIntakeState = IntakeState.Hold
-        # self.coralIntakeState = IntakeState.Out
+        self.algaeIntakeState = IntakeState.Hold
+        self.coralIntakeState = IntakeState.Out
         # self.suspendTask()
 
     def setL2(self):
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_STOW_POSITION
         self.coralWristTarget = IntakeConstants.LEVEL_MID_CORAL_WRIST_POSITION
-        # self.algaeIntakeState = IntakeState.Hold
-        # self.coralIntakeState = IntakeState.Out
+        self.algaeIntakeState = IntakeState.Hold
+        self.coralIntakeState = IntakeState.Out
         # self.suspendTask()
  
     def setL3(self):
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_INTAKE_POSITION
         self.coralWristTarget = IntakeConstants.LEVEL_MID_CORAL_WRIST_POSITION
-        # self.algaeIntakeState = IntakeState.In
-        # self.coralIntakeState = IntakeState.Out
+        self.algaeIntakeState = IntakeState.In
+        self.coralIntakeState = IntakeState.Out
         # self.suspendTask()
  
     def setL4(self):
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_STOW_POSITION
         self.coralWristTarget = IntakeConstants.LEVEL_4_CORAL_WRIST_POSITION
-        # self.algaeIntakeState = IntakeState.Hold
-        # self.coralIntakeState = IntakeState.Out
+        self.algaeIntakeState = IntakeState.Hold
+        self.coralIntakeState = IntakeState.Out
         # self.suspendTask()
     
     def setAlgae(self):
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_INTAKE_POSITION
         self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
-        # self.algaeIntakeState = IntakeState.In
-        # self.coralIntakeState = IntakeState.Hold
+        self.algaeIntakeState = IntakeState.In
+        self.coralIntakeState = IntakeState.Hold
         # self.suspendTask()
     
     def setProcessor(self):
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_EJECT_POSITION
         self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
-        # self.algaeIntakeState = IntakeState.Out
-        # self.coralIntakeState = IntakeState.Hold
+        self.algaeIntakeState = IntakeState.Out
+        self.coralIntakeState = IntakeState.Hold
         # self.suspendTask()
  
     def setStation(self):
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_STOW_POSITION
         self.coralWristTarget = IntakeConstants.INTAKE_CORAL_WRIST_POSITION
-        # self.algaeIntakeState = IntakeState.Hold
-        # self.coralIntakeState = IntakeState.In
+        self.algaeIntakeState = IntakeState.Hold
+        self.coralIntakeState = IntakeState.In
         # self.suspendTask()
     
     def setIdle(self):
         self.algaeWristTarget = IntakeConstants.ALGAE_WRIST_STOW_POSITION
         self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
-        # self.algaeIntakeState = IntakeState.Hold
-        # self.coralIntakeState = IntakeState.Hold
+        self.algaeIntakeState = IntakeState.Hold
+        self.coralIntakeState = IntakeState.Hold
         # self.suspendTask()
-
- 
-    
- 
-
-

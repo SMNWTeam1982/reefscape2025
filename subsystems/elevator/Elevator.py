@@ -37,7 +37,9 @@ class ElevatorConstants:
     ELEVATOR_MAX_HEIGHT = wpimath.units.inchesToMeters(55) + wpimath.units.inchesToMeters(1.75) # 1.44145 meters
 
 class Elevator:
-    def __init__(self):
+    def __init__(self, pdpReference: wpilib.PowerDistribution):
+        self.pdpReference = pdpReference
+
         self.leftAltitudeMotor = rev.SparkMax(0,rev.CANSparkLowLevel.MotorType.kBrushless)
         self.leftAltitudeEncoder = self.leftAltitudeMotor.getEncoder()
 
