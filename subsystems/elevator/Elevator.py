@@ -38,10 +38,10 @@ class ElevatorConstants:
 class Elevator:
     def __init__(self, pdpReference: wpilib.PowerDistribution):
         self.pdpReference = pdpReference
-        self.leftAltitudeMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
+        self.leftAltitudeMotor = rev.SparkMax(11,rev.SparkLowLevel.MotorType.kBrushless)
         self.leftAltitudeEncoder = self.leftAltitudeMotor.getEncoder()
 
-        self.rightAltitudeMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
+        self.rightAltitudeMotor = rev.SparkMax(12,rev.SparkLowLevel.MotorType.kBrushless)
         self.rightAltitudeEncoder = self.rightAltitudeMotor.getEncoder()
 
         self.altitudePIDController = wpimath.controller.PIDController(

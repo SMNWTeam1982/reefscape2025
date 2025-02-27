@@ -10,7 +10,7 @@ import wpimath.trajectory
 import rev
 from phoenix6 import hardware as ctre
 import wpimath.units
-
+from wpilib import SmartDashboard
 
         
 class IntakeConstants:
@@ -54,26 +54,12 @@ class Intake:
         self.coralWristMotor = rev.SparkMax(15,rev.SparkLowLevel.MotorType.kBrushless)
         self.coralWristEncoder = self.coralWristMotor.getEncoder()
 
-        self.coralMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
-
-<<<<<<< Updated upstream
-        self.rightAlgaeMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
-        self.leftAlgaeMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
-=======
-        self.algaeWristMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
-        self.algaeWristEncoder = self.algaeWristMotor.getEncoder()
+        self.coralMotor = rev.SparkMax(16,rev.SparkLowLevel.MotorType.kBrushless)
 
         self.rightAlgaeMotor = rev.SparkMax(14,rev.SparkLowLevel.MotorType.kBrushless)
         self.leftAlgaeMotor = rev.SparkMax(13,rev.SparkLowLevel.MotorType.kBrushless)
->>>>>>> Stashed changes
 
         # self.cooldownTimer = wpilib.Timer()
-
-        self.coralWristController = wpimath.controller.PIDController(
-            IntakeConstants.CORAL_WRIST_PROPORTIONAL_GAIN,
-            IntakeConstants.CORAL_WRIST_DERIVATIVE_GAIN,
-            IntakeConstants.CORAL_WRIST_INTEGRAL_GAIN
-        )
         
         self.coralWristTarget = IntakeConstants.CORAL_WRIST_STARTING_POSITION
 
@@ -123,17 +109,18 @@ class Intake:
     def runIntakeEject(self):
         if self.coralIntakeState == IntakeState.In:
             self.coralMotor.set(-IntakeConstants.CORAL_INTAKE_MAX_SPEED)
+            if self.coralAllTheWayIn:
+                self.setIdle()
         if self.coralIntakeState == IntakeState.Out:
             self.coralMotor.set(IntakeConstants.CORAL_INTAKE_MAX_SPEED)
         if self.coralIntakeState == IntakeState.Hold:
             self.coralMotor.set(0.0)
 
         if self.algaeIntakeState == IntakeState.In:
-            if self.algaeAllTheWayIn():
-                self.setIdle()
-            
             self.leftAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
             self.rightAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
+            if self.algaeAllTheWayIn():
+                self.setIdle()
         if self.algaeIntakeState == IntakeState.Out:
             self.leftAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
             self.rightAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
@@ -148,6 +135,14 @@ class Intake:
     #     self.coralMotor.stopMotor()
     #     self.leftAlgaeMotor.stopMotor()
     #     self.rightAlgeaMotor.stopMotor()
+
+    def logIntakeCurrents(self):
+        SmartDashboard.putNumber("algae current (left motor)", self.pdpReference.getCurrent(IntakeConstants.ALGAE_PDP_CHANNEL))
+        SmartDashboard.putNumber("coral current", self.pdpReference.getCurrent(IntakeConstants.CORAL_PDP_CHANNEL))
+
+    def logWristPosition(self):
+        SmartDashboard.putNumber("coralWristPosition", self.coralWristEncoder.getPosition() * IntakeConstants.CORAL_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER)
+
 
     
     def setL1(self):
