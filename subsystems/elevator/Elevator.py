@@ -78,7 +78,7 @@ class Elevator:
     
     def runElevator(self):
         self.moveElevator()
-        self.intake.runWrists()
+        self.intake.runWrist()
     
     def setL1(self):
         self.targetHeight = ElevatorConstants.LEVEL_1_TARGET_HEIGHT
