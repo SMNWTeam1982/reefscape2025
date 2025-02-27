@@ -51,13 +51,21 @@ class Intake:
     def __init__(self, pdpReference: wpilib.PowerDistribution):
         self.pdpReference = pdpReference
 
-        self.coralWristMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
+        self.coralWristMotor = rev.SparkMax(15,rev.SparkLowLevel.MotorType.kBrushless)
         self.coralWristEncoder = self.coralWristMotor.getEncoder()
 
         self.coralMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
 
+<<<<<<< Updated upstream
         self.rightAlgaeMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
         self.leftAlgaeMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
+=======
+        self.algaeWristMotor = rev.SparkMax(0,rev.SparkLowLevel.MotorType.kBrushless)
+        self.algaeWristEncoder = self.algaeWristMotor.getEncoder()
+
+        self.rightAlgaeMotor = rev.SparkMax(14,rev.SparkLowLevel.MotorType.kBrushless)
+        self.leftAlgaeMotor = rev.SparkMax(13,rev.SparkLowLevel.MotorType.kBrushless)
+>>>>>>> Stashed changes
 
         # self.cooldownTimer = wpilib.Timer()
 
@@ -99,6 +107,10 @@ class Intake:
 
     def algaeAllTheWayIn(self) -> bool:
         return self.pdpReference.getCurrent(IntakeConstants.ALGAE_PDP_CHANNEL) > IntakeConstants.ALGAE_IN_CURRENT_THRESHOLD
+    
+    def coralAllTheWayIn(self) -> bool:
+        return self.pdpReference.getCurrent(IntakeConstants.CORAL_PDP_CHANNEL) > IntakeConstants.CORAL_IN_CURRENT_THRESHOLD
+
 
     def runWrist(self):
         coralAmount = self.coralWristController.calculate(
