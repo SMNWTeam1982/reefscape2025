@@ -52,7 +52,7 @@ class Elevator:
 
         self.zer0AltitudeEncoders()
 
-        self.intake = Intake()
+        self.intake = Intake.Intake(self.pdpReference)
 
         self.targetHeight = ElevatorConstants.IDLE_TARGET_HEIGHT
 

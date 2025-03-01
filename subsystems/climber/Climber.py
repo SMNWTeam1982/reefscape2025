@@ -10,7 +10,7 @@ class ClimbStates(enum.Enum):
 # This probably won't work cause im bad- kay
 class Climber:
     def __init__(self):
-        self.climbMotor = rev.SparkMax(0, rev.SparkLowLevel.MotorType.kBrushless)
+        self.climbMotor = rev.SparkMax(17, rev.SparkLowLevel.MotorType.kBrushless)
         self.climbState = ClimbStates.Lowered
         self.timer = wpilib.Timer
         self.CLIMBER_COOLDOWN = 15

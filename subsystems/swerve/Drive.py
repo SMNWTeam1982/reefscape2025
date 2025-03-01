@@ -200,6 +200,9 @@ class Drivetrain:
         ]
         return self.kinematics.toChassisSpeeds(moduleStates)
 
+    def displayTelemetry(self):
+        pass
+
     def displayTurnPID(self):
         SmartDashboard.putNumber("turn p",self.frontLeft.turningPIDController.getP())
         SmartDashboard.putNumber("turn i",self.frontLeft.turningPIDController.getI())
