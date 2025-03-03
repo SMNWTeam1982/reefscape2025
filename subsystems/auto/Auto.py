@@ -26,9 +26,8 @@ class SwerveAuto:
         )
 
         self.driveReference = driveReference
-        self.pathCommand = AutoBuilder.followPath(PathPlannerPath.fromPathFile("Example Path"))
-        self.pathCommand.initialize() # initialize manualy
-        self.done = False
+        self.pathCommand = None # no path command initially
+        self.done = True
     
     def runAuto(self):
         if self.pathCommand.isFinished():

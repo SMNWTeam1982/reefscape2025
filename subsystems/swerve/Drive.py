@@ -83,19 +83,26 @@ class Drivetrain:
             ),
             wpimath.geometry.Pose2d(),
             # closer to 0 is more trust
-            (0.1,0.1,0.1), # trust swerve module data slightly less, except for gyro
-            (0.09,0.09,1) # trust vision data slightly more
+            (0.1, 0.1, 0.1), # trust swerve module data slightly less, except for gyro
+            (0.09, 0.09, 1) # trust vision data slightly more
         )
 
         self.field = Field2d()
         SmartDashboard.putData("Field", self.field)
 
     def driveWithChassisSpeeds(self,speeds: wpimath.kinematics.ChassisSpeeds,feeds: DriveFeedforwards):
-        self.drive(
+        self.drive( # currently we are supplying robot relative speeds to a field relative function (not good)
             speeds.vx,
             speeds.vy,
             speeds.omega
         )
+
+        self.logPathplannerChassisSpeeds(speeds)
+
+    def logPathplannerChassisSpeeds(speeds: wpimath.kinematics.ChassisSpeeds):
+        SmartDashboard.putNumber("pathplanner vx", speeds.vx)
+        SmartDashboard.putNumber("pathplanner vy", speeds.vy)
+        SmartDashboard.putNumber("pathplanner omega", speeds.omega)
 
     def drive(
         self,
@@ -157,7 +164,6 @@ class Drivetrain:
         )
 
     def updatePoseEstimation(self) -> None:
-
         self.poseEstimator.update(
             wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value),
             (
@@ -179,6 +185,9 @@ class Drivetrain:
 
     def getPose(self) -> wpimath.geometry.Pose2d:
         return self.poseEstimator.getEstimatedPosition() # we will get the robot pose from vision
+    
+    def logPoseEstimation(self):
+        self.field.setRobotPose(self.getPose())
     
     def resetPose(self,pose: wpimath.geometry.Pose2d):
         self.poseEstimator.resetPosition(

@@ -10,7 +10,7 @@ import wpimath.trajectory
 import rev
 from phoenix6 import hardware as ctre
 import wpimath.units
-
+from wpilib import SmartDashboard
 
 
 from . import Intake
@@ -67,6 +67,10 @@ class Elevator:
         averagePosition *= ElevatorConstants.POSITION_TO_ELEVATOR_HEIGHT_MULTIPLIER
 
         return averagePosition + ElevatorConstants.POSITION_TO_ELEVATOR_HEIGHT_OFFSET
+    
+    def logElevatorHeight(self):
+        SmartDashboard.putNumber("elevator height",self.getElevatorHeight())
+        SmartDashboard.putNumber("target height",self.targetHeight)
     
     def moveElevator(self): # run pid
 
