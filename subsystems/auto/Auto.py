@@ -15,7 +15,7 @@ class SwerveAuto:
             driveReference.getPose,
             driveReference.resetPose,
             driveReference.getRelativeSpeeds,
-            driveReference.driveWithChassisSpeeds,
+            lambda speeds, feedforwards: driveReference.driveWithChassisSpeeds(speeds), #driveReference.driveWithChassisSpeeds,
             PPHolonomicDriveController(
                 PIDConstants(1.0,0.0,0.0),
                 PIDConstants(1.0,0.0,0.0)

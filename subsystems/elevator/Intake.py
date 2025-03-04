@@ -31,13 +31,13 @@ class IntakeConstants:
     CORAL_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER = math.pi/20 # Feb 15 2025
 
 
-    ALGAE_PDP_CHANNEL = 10
-    CORAL_PDP_CHANNEL = 11
+    ALGAE_PDP_CHANNEL = 11
+    CORAL_PDP_CHANNEL = 13
     ALGAE_IN_CURRENT_THRESHOLD = 25
     CORAL_IN_CURRENT_THRESHOLD = 25
 
 
-    CORAL_WRIST_PROPORTIONAL_GAIN = 0.2
+    CORAL_WRIST_PROPORTIONAL_GAIN = 0.05
     CORAL_WRIST_INTEGRAL_GAIN = 0.0
     CORAL_WRIST_DERIVATIVE_GAIN = 0.0
 
@@ -60,6 +60,12 @@ class Intake:
         self.leftAlgaeMotor = rev.SparkMax(13,rev.SparkLowLevel.MotorType.kBrushless)
 
         # self.cooldownTimer = wpilib.Timer()
+
+        self.coralWristController = wpimath.controller.PIDController(
+            IntakeConstants.CORAL_WRIST_PROPORTIONAL_GAIN,
+            IntakeConstants.CORAL_WRIST_INTEGRAL_GAIN,
+            IntakeConstants.CORAL_WRIST_DERIVATIVE_GAIN
+        )
         
         self.coralWristTarget = IntakeConstants.CORAL_WRIST_STARTING_POSITION
 

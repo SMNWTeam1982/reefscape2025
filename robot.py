@@ -34,7 +34,10 @@ class MyRobot(wpilib.TimedRobot):
         self.runningReefNavigation = False
 
     def robotPeriodic(self):
-        self.drive.displayTelemetry()
+        self.elevator.logElevatorHeight()
+        self.elevator.intake.logIntakeCurrents()
+        self.elevator.intake.logWristPosition()
+        self.drive.logPoseEstimation()
 
         #if self.driveController.getAButton():
             #self.drive.displayDrivePID()
@@ -49,13 +52,13 @@ class MyRobot(wpilib.TimedRobot):
         pass
     def teleopPeriodic(self):
 
-        if self.operatorController.getButton(1):
-            self.elevator.setL1()
         if self.operatorController.getButton(2):
+            self.elevator.setL1()
+        if self.operatorController.getButton(1):
             self.elevator.setL2()
-        if self.operatorController.getButton(3):
+        if self.operatorController.getButton(7):
             self.elevator.setL3Coral()
-        if self.operatorController.getButton(4):
+        if self.operatorController.getButton(6):
             self.elevator.setL4()
         if self.operatorController.getButton(5):
             self.elevator.setHighAlgae()
@@ -69,7 +72,6 @@ class MyRobot(wpilib.TimedRobot):
             self.elevator.setL3Algae()
         if self.operatorController.getButton(10):
             self.elevator.intake.runIntakeEject()
-
         if self.driveController.getRightBumper():
             self.climber.setRaised()
         if self.driveController.getLeftBumper():
@@ -96,7 +98,8 @@ class MyRobot(wpilib.TimedRobot):
         self.drive.drive(
             self.deadzone(x),
             self.deadzone(y),
-            self.deadzone(turn)
+            self.deadzone(turn),
+            True
         )
 
         if self.driveController.getXButton(): # set left pos

@@ -13,7 +13,7 @@ from phoenix6 import hardware as ctre
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
 import robotpy_apriltag
-from pathplannerlib.util import DriveFeedforwards
+from pathplannerlib import DriveFeedforwards
 from pathplannerlib.logging import PathPlannerLogging
 
 from wpimath.estimator import SwerveDrive4PoseEstimator
@@ -90,11 +90,12 @@ class Drivetrain:
         self.field = Field2d()
         SmartDashboard.putData("Field", self.field)
 
-    def driveWithChassisSpeeds(self,speeds: wpimath.kinematics.ChassisSpeeds,feeds: DriveFeedforwards):
+    def driveWithChassisSpeeds(self,speeds: wpimath.kinematics.ChassisSpeeds):
         self.drive( # currently we are supplying robot relative speeds to a field relative function (not good)
             speeds.vx,
             speeds.vy,
-            speeds.omega
+            speeds.omega,
+            False
         )
 
         self.logPathplannerChassisSpeeds(speeds)
@@ -109,6 +110,7 @@ class Drivetrain:
         xSpeed: float, # meters per second
         ySpeed: float, # meters per second
         rotation: float, # radians per second
+        fieldRelative: bool
     ) -> None:
         """
         Method to drive the robot using joystick info.
@@ -116,12 +118,20 @@ class Drivetrain:
         :param ySpeed: Speed of the robot in the y direction (sideways).
         :param rot: Angular rate of the robot.
         """
+
+        speedsToDiscretize = None
+        if fieldRelative:
+            speedsToDiscretize = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
+                xSpeed, ySpeed, rotation, wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value)
+            )
+        else:
+            speedsToDiscretize = wpimath.kinematics.ChassisSpeeds(
+                xSpeed,ySpeed,rotation
+            )
         swerveModuleStates = self.kinematics.toSwerveModuleStates(
             wpimath.kinematics.ChassisSpeeds.discretize(
                 (
-                    wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, rotation, wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value)
-                    )
+                    speedsToDiscretize
                 ),
                 0.02, # default period
             )

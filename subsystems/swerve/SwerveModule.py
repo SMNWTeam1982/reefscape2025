@@ -134,7 +134,7 @@ class Wheel:
         if turnOutput < -1.0:
             turnOutput = -1.0
 
-        self.driveMotor.setVoltage( driveOutput + driveFeedforward ) # Volts because of feedforward
+        self.driveMotor.setVoltage( (driveOutput + driveFeedforward) * 0.5 ) # Volts because of feedforward
 
         self.turningMotor.set(-turnOutput) # use percent for turning
 
