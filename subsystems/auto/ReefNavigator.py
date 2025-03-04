@@ -49,18 +49,18 @@ class ReefNavigationConstants:
         wpimath.geometry.Rotation2d.fromDegrees(54)
     )
 
-    BLUE_RIGHT_GROOVE_OFFSET = wpimath.geometry.Transform2d(
-        wpimath.units.inchesToMeters(8),
-        wpimath.geometry.Rotation2d.fromDegrees(54-90)
-    )
+    # BLUE_RIGHT_GROOVE_OFFSET = wpimath.geometry.Transform2d(
+    #     wpimath.units.inchesToMeters(8),
+    #     wpimath.geometry.Rotation2d.fromDegrees(54-90)
+    # )
 
-    BLUE_RIGHT_STATION_SETPOINTS = [
-        BLUE_RIGHT_STATION_CENTER,
-        BLUE_RIGHT_STATION_CENTER.transformBy(BLUE_RIGHT_GROOVE_OFFSET),
-        BLUE_RIGHT_STATION_CENTER,
-        BLUE_RIGHT_STATION_CENTER,
-        BLUE_RIGHT_STATION_CENTER,
-    ]
+    # BLUE_RIGHT_STATION_SETPOINTS = [
+    #     BLUE_RIGHT_STATION_CENTER,
+    #     BLUE_RIGHT_STATION_CENTER.transformBy(BLUE_RIGHT_GROOVE_OFFSET),
+    #     BLUE_RIGHT_STATION_CENTER,
+    #     BLUE_RIGHT_STATION_CENTER,
+    #     BLUE_RIGHT_STATION_CENTER,
+    # ]
 
     BLUE_L1_SETPOINTS = [
         # :>

@@ -13,7 +13,6 @@ from phoenix6 import hardware as ctre
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
 import robotpy_apriltag
-from pathplannerlib import DriveFeedforwards
 from pathplannerlib.logging import PathPlannerLogging
 
 from wpimath.estimator import SwerveDrive4PoseEstimator

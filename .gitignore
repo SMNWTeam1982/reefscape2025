@@ -169,3 +169,4 @@ __pycache__
 .pytest_cache
 .wpilib
 tests/
+ctre_sim/
