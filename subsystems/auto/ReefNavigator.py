@@ -3,45 +3,11 @@ import math
 import wpilib
 import wpimath.geometry
 import wpimath.kinematics
+import robotpy_apriltag
 
 class ReefNavigationConstants:
-    SNAP_RADIUS = wpimath.units.inchesToMeters(23.87490776)
+    SNAP_RADIUS = wpimath.units.inchesToMeters(25) # set to a slightly larger radius because of the new setpoints, old: 23.87490776
 
-    BLUE_REEF_CENTER_POSITION = wpimath.geometry.Transform2d(
-        wpimath.units.inchesToMeters(176.745),
-        wpimath.units.inchesToMeters(158.5),
-        wpimath.geometry.Rotation2d()
-    )
-
-    EAST_TAG_LEFT_POSE_RELATIVE = wpimath.geometry.Pose2d(
-        wpimath.units.inchesToMeters(-47.745 - 5), # add like a 5 inch buffer
-        wpimath.units.inchesToMeters(6.5 - 5.5), #5.5 is the coral intake offset
-        wpimath.geometry.Rotation2d(0.0)
-    )
-
-    EAST_TAG_RIGHT_POSE_RELATIVE = wpimath.geometry.Pose2d(
-        wpimath.units.inchesToMeters(-47.745 - 5),
-        wpimath.units.inchesToMeters(-6.5 - 5.5),
-        wpimath.geometry.Rotation2d(0.0)
-    )
-
-    BLUE_RIGHT_SETPOINTS = [
-        EAST_TAG_RIGHT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(0)).transformBy(BLUE_REEF_CENTER_POSITION),
-        EAST_TAG_RIGHT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(60)).transformBy(BLUE_REEF_CENTER_POSITION),
-        EAST_TAG_RIGHT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(120)).transformBy(BLUE_REEF_CENTER_POSITION),
-        EAST_TAG_RIGHT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(180)).transformBy(BLUE_REEF_CENTER_POSITION),
-        EAST_TAG_RIGHT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(240)).transformBy(BLUE_REEF_CENTER_POSITION),
-        EAST_TAG_RIGHT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(300)).transformBy(BLUE_REEF_CENTER_POSITION),
-    ]
-
-    BLUE_LEFT_SETPOINTS = [
-        EAST_TAG_LEFT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(0)).transformBy(BLUE_REEF_CENTER_POSITION),
-        EAST_TAG_LEFT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(60)).transformBy(BLUE_REEF_CENTER_POSITION),
-        EAST_TAG_LEFT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(120)).transformBy(BLUE_REEF_CENTER_POSITION),
-        EAST_TAG_LEFT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(180)).transformBy(BLUE_REEF_CENTER_POSITION),
-        EAST_TAG_LEFT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(240)).transformBy(BLUE_REEF_CENTER_POSITION),
-        EAST_TAG_LEFT_POSE_RELATIVE.rotateBy(wpimath.geometry.Rotation2d.fromDegrees(300)).transformBy(BLUE_REEF_CENTER_POSITION),
-    ]
 
     BLUE_RIGHT_STATION_CENTER = wpimath.geometry.Pose2d(
         wpimath.units.inchesToMeters(41.73899),
@@ -49,28 +15,85 @@ class ReefNavigationConstants:
         wpimath.geometry.Rotation2d.fromDegrees(54)
     )
 
-    # BLUE_RIGHT_GROOVE_OFFSET = wpimath.geometry.Transform2d(
-    #     wpimath.units.inchesToMeters(8),
-    #     wpimath.geometry.Rotation2d.fromDegrees(54-90)
-    # )
+    BLUE_RIGHT_GROOVE_OFFSET = wpimath.geometry.Transform2d(
+        wpimath.geometry.Translation2d(
+            wpimath.units.inchesToMeters(8),
+            wpimath.geometry.Rotation2d.fromDegrees(54-90)
+        ),
+        wpimath.geometry.Rotation2d.fromDegrees(0)
+    )
 
-    # BLUE_RIGHT_STATION_SETPOINTS = [
-    #     BLUE_RIGHT_STATION_CENTER,
-    #     BLUE_RIGHT_STATION_CENTER.transformBy(BLUE_RIGHT_GROOVE_OFFSET),
-    #     BLUE_RIGHT_STATION_CENTER,
-    #     BLUE_RIGHT_STATION_CENTER,
-    #     BLUE_RIGHT_STATION_CENTER,
-    # ]
+    # comment out if it doesn't work - zach march 5
+    REEF_RIGHT_SETPOINTS = [
+        generateBranchReefSetpoint(6,True),
+        generateBranchReefSetpoint(7,True),
+        generateBranchReefSetpoint(8,True), # red right setpoints
+        generateBranchReefSetpoint(9,True),
+        generateBranchReefSetpoint(10,True),
+        generateBranchReefSetpoint(11,True),
+
+        generateBranchReefSetpoint(17,True),
+        generateBranchReefSetpoint(18,True),
+        generateBranchReefSetpoint(19,True), # blue right setpoints
+        generateBranchReefSetpoint(20,True),
+        generateBranchReefSetpoint(21,True),
+        generateBranchReefSetpoint(22,True),
+    ]
+
+    # comment out if no work - zach march 5
+    REEF_LEFT_SETPOINTS = [
+        generateBranchReefSetpoint(6,False),
+        generateBranchReefSetpoint(7,False),
+        generateBranchReefSetpoint(8,False), # red left setpoints
+        generateBranchReefSetpoint(9,False),
+        generateBranchReefSetpoint(10,False),
+        generateBranchReefSetpoint(11,False),
+
+        generateBranchReefSetpoint(17,False),
+        generateBranchReefSetpoint(18,False),
+        generateBranchReefSetpoint(19,False), # blue left setpoints
+        generateBranchReefSetpoint(20,False),
+        generateBranchReefSetpoint(21,False),
+        generateBranchReefSetpoint(22,False)
+    ]
 
     BLUE_L1_SETPOINTS = [
         # :>
     ]
 
-    
+def generateBranchReefSetpoint(idOfTagOnFace: int, rightBranch: bool) -> wpimath.geometry.Pose2d:
 
+    tagPose = robotpy_apriltag.AprilTagField.kDefaultField.getTagPose(idOfTagOnFace).toPose2d() # get the pose of the tag we want
+
+    verticalShift = -5.5 # offset of the intake
+
+    if rightBranch: # shift to the left or right branch
+        verticalShift -= 6.5
+    else:
+        verticalShift += 6.5
+    
+    westRightTranslation = wpimath.geometry.Translation2d( # based off of tag 18 on the west facing side of the blue reef
+        wpimath.units.inchesToMeters(-18), # shift away 18 in
+        wpimath.units.inchesToMeters(verticalShift),
+    )
+
+    newTranslation = wpimath.geometry.Translation2d(
+        westRightTranslation.norm(),
+        westRightTranslation.angle() + tagPose.angle() # rotate the shift by the tags rotation
+    )
+
+    return tagPose.transformBy( # tranform the tag pose to be a reef setpoint
+        wpimath.geometry.Transform2d(
+            newTranslation, # shift the tag pose by the correct amonut
+            wpimath.geometry.Rotation2d.fromDegrees(180) # face towards the tag
+        )
+    )
+
+# dont have L1 points defined
 def getNearestL1Setpoint(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2d:
+    return wpimath.geometry.Pose2d()
     robotPos.nearest(ReefNavigationConstants.BLUE_L1_SETPOINTS)
 def getNearestLeft(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2d:
-    robotPos.nearest(ReefNavigationConstants.BLUE_LEFT_SETPOINTS)
+    return robotPos.nearest(ReefNavigationConstants.REEF_LEFT_SETPOINTS)
 def getNearestRight(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2d:
-    robotPos.nearest(ReefNavigationConstants.BLUE_RIGHT_SETPOINTS)
+    return robotPos.nearest(ReefNavigationConstants.REEF_RIGHT_SETPOINTS)
