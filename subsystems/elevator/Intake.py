@@ -71,6 +71,9 @@ class Intake:
 
         self.algaeIntakeState = IntakeState.Hold
         self.coralIntakeState = IntakeState.Hold
+    
+    def zeroEncoder(self):
+        self.coralWristEncoder.setPosition(0.0)
 
     # returns true if intake/ejection is complete
     # def runIntakesTimed(self) -> bool:

@@ -52,6 +52,28 @@ class MyRobot(wpilib.TimedRobot):
         pass
     def teleopPeriodic(self):
 
+        # for running the PIDs
+        if self.driveController.getAButton():
+            self.elevator.runElevator() # temporaly unbundled the wrist control from this funciton
+
+        if self.driveController.getXButton(): # run the wrist when pressing X
+            self.elevator.intake.runWrist()
+
+        if self.driveController.getBButton(): # zero elevator encoders
+            self.elevator.zer0AltitudeEncoders()
+        if self.driveController.getYButton(): # zero wrist encoders
+            self.elevator.intake.zeroEncoder()
+        
+        # for running the elevator manually
+        if self.driveController.getRightBumper():
+            self.elevator.moveElevatorRaw(0.1)
+        if self.driveController.getLeftBumper():
+            self.elevator.moveElevatorRaw(-0.1)
+
+
+        return # early return for the sake of testing, this will make it so we can use the controls for other stuff
+        
+
         if self.operatorController.getButton(2):
             self.elevator.setL1()
         if self.operatorController.getButton(1):
@@ -76,6 +98,8 @@ class MyRobot(wpilib.TimedRobot):
             self.climber.setRaised()
         if self.driveController.getLeftBumper():
             self.climber.setLowered()
+
+        
     
         # ---------- put operator controls above this line --------------------
 

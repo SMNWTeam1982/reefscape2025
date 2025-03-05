@@ -88,10 +88,14 @@ class Elevator:
         # one will need to be negated, we dont know which one yet
         self.leftAltitudeMotor.run(-amount)
         self.rightAltitudeMotor.run(amount)
+
+    def moveElevatorRaw(self,amount: float):
+        self.leftAltitudeMotor.run(-amount)
+        self.rightAltitudeMotor.run(amount)
     
     def runElevator(self):
         self.moveElevator()
-        self.intake.runWrist()
+        # self.intake.runWrist() comment out so we can run wrist seperate, for testing - zach march 5
     
     def setL1(self):
         self.targetHeight = ElevatorConstants.LEVEL_1_TARGET_HEIGHT
