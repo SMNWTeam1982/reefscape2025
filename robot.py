@@ -48,7 +48,7 @@ class MyRobot(wpilib.TimedRobot):
 
         # for running the PIDs
         if self.driveController.getAButton():
-            self.elevator.runElevator() # temporaly unbundled the wrist control from this funciton
+            self.elevator.moveElevator() # runs the elevator pid
 
         if self.driveController.getXButton(): # run the wrist when pressing X
             self.elevator.intake.runWrist()
