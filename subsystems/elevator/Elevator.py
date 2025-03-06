@@ -32,8 +32,8 @@ class ElevatorConstants:
     ALTITUDE_INTEGRAL_GAIN = 0.0
     ALTITUDE_DERIVATIVE_GAIN = 0.0
 
-    MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_MULTIPLIER = (((1.0 / 25.0) * 360.0) / 1811.0) * wpimath.units.inchesToMeters(55) + wpimath.units.inchesToMeters(1.75) # estimate from Feb 19 2025
-    ELEVATOR_MAX_HEIGHT = wpimath.units.inchesToMeters(55) + wpimath.units.inchesToMeters(1.75) # 1.44145 meters
+    MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER = ((1/118.715)*128 + 53) / 100 # march 6 2025
+    ELEVATOR_MAX_HEIGHT = 181
     #ELEVATOR_MAX_HEIGHT= wpimath.units.inchesToMeters(50) + wpimath.units.inchesToMeters(0.5)
 
 class Elevator:
@@ -65,11 +65,12 @@ class Elevator:
         self.rightAltitudeEncoder.setPosition(0.0)
 
     def getElevatorHeight(self) -> wpimath.units.meters:
-        averagePosition = (self.leftAltitudeEncoder.getPosition() + self.rightAltitudeEncoder.getPosition()) / 2
+        # negate one
+        averagePosition = (self.leftAltitudeEncoder.getPosition() - self.rightAltitudeEncoder.getPosition()) / 2
 
-        averagePosition *= ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_MULTIPLIER
+        averagePosition *= ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER
 
-        return averagePosition + ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_MULTIPLIER
+        return averagePosition
     
     def LogRawElevatorHeights(self):
         leftPos = self.leftAltitudeEncoder.getPosition()
@@ -78,7 +79,7 @@ class Elevator:
         SmartDashboard.putNumber("raw altitude encoder left",leftPos)
         SmartDashboard.putNumber("raw altitude encoder right",rightPos)
 
-        SmartDashboard.putNumber("average raw altitude", (leftPos + rightPos) / 2)
+        SmartDashboard.putNumber("average raw altitude", (leftPos - rightPos) / 2)
     
     def logElevatorHeight(self):
         SmartDashboard.putNumber("elevator height",self.getElevatorHeight())

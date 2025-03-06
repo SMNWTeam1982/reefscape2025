@@ -29,6 +29,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def robotPeriodic(self):
         self.elevator.logElevatorHeight()
+        self.elevator.LogRawElevatorHeights()
         self.elevator.intake.logIntakeCurrents()
         self.elevator.intake.logWristPosition()
         self.drive.logPoseEstimation()
@@ -60,9 +61,9 @@ class MyRobot(wpilib.TimedRobot):
         
         # for running the elevator manually
         if self.driveController.getRightBumper():
-            self.elevator.moveElevatorRaw(0.1)
+            self.elevator.moveElevatorRaw(0.2)
         elif self.driveController.getLeftBumper():
-            self.elevator.moveElevatorRaw(-0.1)
+            self.elevator.moveElevatorRaw(-0.2)
         else:
             self.elevator.moveElevatorRaw(0.0)
 
