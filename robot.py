@@ -9,12 +9,6 @@ from subsystems.climber import Climber
 # from photonlibpy.photonPoseEstimator import PoseStrategy
 # from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
-# this value needs to be adjusted for the actual robot
-kRobotToCam = wpimath.geometry.Transform3d(
-    wpimath.geometry.Translation3d(.5, 0, .5),
-    wpimath.geometry.Rotation3d.fromDegrees(0, -30, 0)
-)
-
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.powerDistributionModule = wpilib.PowerDistribution(1,wpilib.PowerDistribution.ModuleType.kRev)
@@ -67,8 +61,10 @@ class MyRobot(wpilib.TimedRobot):
         # for running the elevator manually
         if self.driveController.getRightBumper():
             self.elevator.moveElevatorRaw(0.1)
-        if self.driveController.getLeftBumper():
+        elif self.driveController.getLeftBumper():
             self.elevator.moveElevatorRaw(-0.1)
+        else:
+            self.elevator.moveElevatorRaw(0.0)
 
         # returning early causes the code to not work, I commented everything else out instead
         #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
