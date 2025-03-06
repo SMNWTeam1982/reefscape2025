@@ -102,11 +102,14 @@ class Intake:
 
     def algaeAllTheWayIn(self) -> bool:
         return self.pdpReference.getCurrent(IntakeConstants.ALGAE_PDP_CHANNEL) > IntakeConstants.ALGAE_IN_CURRENT_THRESHOLD
+    def algaeAllTheWayOut(self) -> bool:
+        return False # todo
     
     def coralAllTheWayIn(self) -> bool:
         return self.pdpReference.getCurrent(IntakeConstants.CORAL_PDP_CHANNEL) > IntakeConstants.CORAL_IN_CURRENT_THRESHOLD
-
-
+    def coralAllTheWayOut(self) -> bool:
+        return False # todo
+    
     def runWrist(self):
         coralAmount = self.coralWristController.calculate(
             self.coralWristEncoder.getPosition() * IntakeConstants.CORAL_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER,
@@ -115,11 +118,11 @@ class Intake:
 
         self.coralWristMotor.set(coralAmount)
 
-    def runIntakeEject(self):
+    def runIntakeEject(self) -> bool:
         if self.coralIntakeState == IntakeState.In:
             self.coralMotor.set(-IntakeConstants.CORAL_INTAKE_MAX_SPEED)
-            if self.coralAllTheWayIn:
-                self.setIdle()
+            # if self.coralAllTheWayIn(): state will be controlled from the elevator state machines
+            #     self.setIdle() 
         if self.coralIntakeState == IntakeState.Out:
             self.coralMotor.set(IntakeConstants.CORAL_INTAKE_MAX_SPEED)
         if self.coralIntakeState == IntakeState.Hold:
@@ -128,8 +131,8 @@ class Intake:
         if self.algaeIntakeState == IntakeState.In:
             self.leftAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
             self.rightAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
-            if self.algaeAllTheWayIn():
-                self.setIdle()
+            # if self.algaeAllTheWayIn():
+            #     self.setIdle()
         if self.algaeIntakeState == IntakeState.Out:
             self.leftAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
             self.rightAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
@@ -166,9 +169,9 @@ class Intake:
         self.coralIntakeState = IntakeState.Out
         # self.suspendTask()
  
-    def setL3(self):
+    def setL3(self): # coral
         self.coralWristTarget = IntakeConstants.LEVEL_MID_CORAL_WRIST_POSITION
-        self.algaeIntakeState = IntakeState.In
+        self.algaeIntakeState = IntakeState.Hold
         self.coralIntakeState = IntakeState.Out
         # self.suspendTask()
  

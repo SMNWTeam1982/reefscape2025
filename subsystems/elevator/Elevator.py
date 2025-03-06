@@ -58,6 +58,8 @@ class Elevator:
 
         self.targetHeight = ElevatorConstants.IDLE_TARGET_HEIGHT
 
+        self.activeStateMachine = self.idleStateMachine # this variable IS the function, this might not be the best way to do this
+
     def zer0AltitudeEncoders(self):
         self.leftAltitudeEncoder.setPosition(0.0)
         self.rightAltitudeEncoder.setPosition(0.0)
@@ -94,42 +96,98 @@ class Elevator:
         self.leftAltitudeMotor.set(amount)
         self.rightAltitudeMotor.set(-amount)
     
-    def runElevator(self):
+    def moveElevatorAndWrist(self):
         self.moveElevator()
-        # self.intake.runWrist() comment out so we can run wrist seperate, for testing - zach march 5
+        self.intake.runWrist()
+
+    def runStateMachine(self):
+        self.activeStateMachine()
+
+    def idleStateMachine(self):
+        self.moveElevatorAndWrist()
+
+    def coralScoreStateMachine(self):
+        self.moveElevatorAndWrist()
+        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+            self.intake.runIntakeEject()
+            if self.intake.coralAllTheWayOut():
+                self.setIdle()
+
+    def algaeIntakeStateMachine(self):
+        self.moveElevatorAndWrist()
+        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+            self.intake.runIntakeEject()
+            if self.intake.algaeAllTheWayIn():
+                self.setIdle()
+
+    def coralScoreAndAlgaeIntakeStateMachine(self): # for an L3 with an algae on it
+        self.moveElevatorAndWrist()
+        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+            self.intake.runIntakeEject()
+            if self.intake.coralAllTheWayOut():
+                self.setL3Algae() # after coral done set to algae intake mode
+    
+    def coralIntakeStateMachine(self):
+        self.moveElevatorAndWrist()
+        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+            self.intake.runIntakeEject()
+            if self.intake.coralAllTheWayIn():
+                self.setIdle()
+
+    def algaeScoreStateMachine(self):
+        self.moveElevatorAndWrist()
+        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+            self.intake.runIntakeEject()
+            if self.intake.algaeAllTheWayOut():
+                self.setIdle()
+
     
     def setL1(self):
         self.targetHeight = ElevatorConstants.LEVEL_1_TARGET_HEIGHT
         self.intake.setL1()
+        self.activeStateMachine = self.coralScoreStateMachine
     
     def setL2(self):
         self.targetHeight = ElevatorConstants.LEVEL_2_TARGET_HEIGHT
         self.intake.setL2()
+        self.activeStateMachine = self.coralScoreStateMachine
     
     def setL3Coral(self):
         self.targetHeight = ElevatorConstants.LEVEL_3_TARGET_HEIGHT
         self.intake.setL3()
+        self.activeStateMachine = self.coralScoreStateMachine
         
     def setL3Algae(self):
         self.targetHeight = ElevatorConstants.LEVEL_3_TARGET_HEIGHT
         self.intake.setAlgae()
+        self.activeStateMachine = self.algaeIntakeStateMachine
+    
+    def setL3Combo(self):
+        self.targetHeight = ElevatorConstants.LEVEL_3_TARGET_HEIGHT
+        self.intake.setL3()
+        self.activeStateMachine = self.coralScoreAndAlgaeIntakeStateMachine
 
     def setL4(self):
         self.targetHeight = ElevatorConstants.LEVEL_4_TARGET_HEIGHT
         self.intake.setL4()
+        self.activeStateMachine = self.coralScoreStateMachine
 
     def setHighAlgae(self):
         self.targetHeight = ElevatorConstants.ALGAE_2_TARGET_HEIGHT
         self.intake.setAlgae()
+        self.activeStateMachine = self.algaeIntakeStateMachine
     
     def setProcessor(self):
         self.targetHeight = ElevatorConstants.PROCESSOR_TARGET_HEIGHT
         self.intake.setProcessor()
+        self.activeStateMachine = self.algaeScoreStateMachine
     
     def setStation(self):
         self.targetHeight = ElevatorConstants.INTAKING_TARGET_HEIGHT
         self.intake.setStation()
+        self.activeStateMachine = self.coralIntakeStateMachine
 
     def setIdle(self):
         self.targetHeight = ElevatorConstants.IDLE_TARGET_HEIGHT
         self.intake.setIdle()
+        self.activeStateMachine = self.idleStateMachine
