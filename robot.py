@@ -46,7 +46,7 @@ class MyRobot(wpilib.TimedRobot):
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
-        self.auto.runAuto()
+        #self.auto.runAuto()
         pass
     def teleopInit(self):
         pass
@@ -70,42 +70,42 @@ class MyRobot(wpilib.TimedRobot):
         if self.driveController.getLeftBumper():
             self.elevator.moveElevatorRaw(-0.1)
 
-
-        return # early return for the sake of testing, this will make it so we can use the controls for other stuff
+        # returning early causes the code to not work, I commented everything else out instead
+        #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
         
 
-        if self.operatorController.getButton(2):
-            self.elevator.setL1()
-        if self.operatorController.getButton(1):
-            self.elevator.setL2()
-        if self.operatorController.getButton(7):
-            self.elevator.setL3Coral()
-        if self.operatorController.getButton(6):
-            self.elevator.setL4()
-        if self.operatorController.getButton(5):
-            self.elevator.setHighAlgae()
-        if self.operatorController.getButton(6):
-            self.elevator.setProcessor()
-        if self.operatorController.getButton(7):
-            self.elevator.setStation()
-        if self.operatorController.getButton(8):
-            self.elevator.setIdle()
-        if self.operatorController.getButton(9):
-            self.elevator.setL3Algae()
-        if self.operatorController.getButton(10):
-            self.elevator.intake.runIntakeEject()
-        if self.driveController.getRightBumper():
-            self.climber.setRaised()
-        if self.driveController.getLeftBumper():
-            self.climber.setLowered()
+        #if self.operatorController.getButton(2):
+        #    self.elevator.setL1()
+        #if self.operatorController.getButton(1):
+        #    self.elevator.setL2()
+        #if self.operatorController.getButton(7):
+        #    self.elevator.setL3Coral()
+        #if self.operatorController.getButton(6):
+        #    self.elevator.setL4()
+        #if self.operatorController.getButton(5):
+        #    self.elevator.setHighAlgae()
+        #if self.operatorController.getButton(6):
+        #    self.elevator.setProcessor()
+        #if self.operatorController.getButton(7):
+        #    self.elevator.setStation()
+        #if self.operatorController.getButton(8):
+        #    self.elevator.setIdle()
+        #if self.operatorController.getButton(9):
+        #    self.elevator.setL3Algae()
+        #if self.operatorController.getButton(10):
+        #    self.elevator.intake.runIntakeEject()
+        #if self.driveController.getRightBumper():
+        #    self.climber.setRaised()
+        #if self.driveController.getLeftBumper():
+        #    self.climber.setLowered()
 
         
     
         # ---------- put operator controls above this line --------------------
-
-        if self.driveController.getAButton():
-            self.auto.pathCommand.cancel()
-            self.runningReefNavigation = False
+        # Commented out for elevator testing - Kay 3/5
+        #if self.driveController.getAButton():
+        #    self.auto.pathCommand.cancel()
+        #    self.runningReefNavigation = False
 
         if self.runningReefNavigation:
             if self.auto.runAuto(): # check if its done and end nav when it is
@@ -125,22 +125,22 @@ class MyRobot(wpilib.TimedRobot):
             self.deadzone(turn),
             True
         )
-
-        if self.driveController.getXButton(): # set left pos
-            targetPose = ReefNavigator.getNearestLeft(self.drive.getPose())
-            if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
-                self.auto.generatePathToPose(targetPose)
-                self.runningReefNavigation = True
-        if self.driveController.getBButton(): # set right pos
-            targetPose = ReefNavigator.getNearestRight(self.drive.getPose())
-            if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
-                self.auto.generatePathToPose(targetPose)
-                self.runningReefNavigation = True
-        if self.driveController.getAButton(): # set L1 pos
-            targetPose = ReefNavigator.getNearestL1Setpoint()
-            if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
-                self.auto.generatePathToPose(targetPose)
-                self.runningReefNavigation = True
+        # Commented out for elevator testing - Kay 3/5
+        #if self.driveController.getXButton(): # set left pos
+        #    targetPose = ReefNavigator.getNearestLeft(self.drive.getPose())
+        #    if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
+        #        self.auto.generatePathToPose(targetPose)
+        #        self.runningReefNavigation = True
+        #if self.driveController.getBButton(): # set right pos
+        #    targetPose = ReefNavigator.getNearestRight(self.drive.getPose())
+        #    if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
+        #        self.auto.generatePathToPose(targetPose)
+        #        self.runningReefNavigation = True
+        #if self.driveController.getAButton(): # set L1 pos
+        #    targetPose = ReefNavigator.getNearestL1Setpoint()
+        #    if targetPose.translation().distance(self.drive.getPose().translation()) < ReefNavigator.ReefNavigationConstants.SNAP_RADIUS:
+        #        self.auto.generatePathToPose(targetPose)
+        #        self.runningReefNavigation = True
     
     def deadzone(self, num: float) -> float:
         if abs(num) < 0.05:

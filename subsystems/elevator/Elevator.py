@@ -34,13 +34,14 @@ class ElevatorConstants:
 
     MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_MULTIPLIER = (((1.0 / 25.0) * 360.0) / 1811.0) * wpimath.units.inchesToMeters(55) + wpimath.units.inchesToMeters(1.75) # estimate from Feb 19 2025
     ELEVATOR_MAX_HEIGHT = wpimath.units.inchesToMeters(55) + wpimath.units.inchesToMeters(1.75) # 1.44145 meters
+    #ELEVATOR_MAX_HEIGHT= wpimath.units.inchesToMeters(50) + wpimath.units.inchesToMeters(0.5)
 
 class Elevator:
     def __init__(self, pdpReference: wpilib.PowerDistribution):
         self.pdpReference = pdpReference
         self.leftAltitudeMotor = rev.SparkMax(11,rev.SparkLowLevel.MotorType.kBrushless)
         self.leftAltitudeEncoder = self.leftAltitudeMotor.getEncoder()
-        self.leftAltitudeEncoder.setPositionConversionFactor(-1)
+        # self.leftAltitudeEncoder.setPositionConversionFactor(-1)
 
         self.rightAltitudeMotor = rev.SparkMax(12,rev.SparkLowLevel.MotorType.kBrushless)
         self.rightAltitudeEncoder = self.rightAltitudeMotor.getEncoder()
@@ -64,9 +65,9 @@ class Elevator:
     def getElevatorHeight(self) -> wpimath.units.meters:
         averagePosition = (self.leftAltitudeEncoder.getPosition() + self.rightAltitudeEncoder.getPosition()) / 2
 
-        averagePosition *= ElevatorConstants.POSITION_TO_ELEVATOR_HEIGHT_MULTIPLIER
+        averagePosition *= ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_MULTIPLIER
 
-        return averagePosition + ElevatorConstants.POSITION_TO_ELEVATOR_HEIGHT_OFFSET
+        return averagePosition + ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_MULTIPLIER
     
     def LogRawElevatorHeights(self):
         leftPos = self.leftAltitudeEncoder.getPosition()
@@ -86,12 +87,12 @@ class Elevator:
         amount = self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)
         
         # one will need to be negated, we dont know which one yet
-        self.leftAltitudeMotor.run(-amount)
-        self.rightAltitudeMotor.run(amount)
+        self.leftAltitudeMotor.set(amount)
+        self.rightAltitudeMotor.set(-amount)
 
     def moveElevatorRaw(self,amount: float):
-        self.leftAltitudeMotor.run(-amount)
-        self.rightAltitudeMotor.run(amount)
+        self.leftAltitudeMotor.set(amount)
+        self.rightAltitudeMotor.set(-amount)
     
     def runElevator(self):
         self.moveElevator()
