@@ -49,23 +49,24 @@ class MyRobot(wpilib.TimedRobot):
 
         # for running the PIDs
         if self.driveController.getAButton():
-            self.elevator.moveElevator() # runs the elevator pid
+            self.elevator.setL1() # runs the elevator pid
 
         if self.driveController.getXButton(): # run the wrist when pressing X
             self.elevator.intake.runWrist()
 
-        if self.driveController.getBButton(): # zero elevator encoders
-            self.elevator.zer0AltitudeEncoders()
+        if self.driveController.getBButton(): # z
+            #zero elevator encoders
+            self.elevator.setIdle()
         if self.driveController.getYButton(): # zero wrist encoders
             self.elevator.intake.zeroEncoder()
         
         # for running the elevator manually
         if self.driveController.getRightBumper():
             #self.elevator.moveElevatorRaw(0.2)
-            self.elevator.intake.coralMotor.set(0.1)
+            self.elevator.intake.coralMotor.set(0.6)
         elif self.driveController.getLeftBumper():
             #self.elevator.moveElevatorRaw(-0.2)
-            self.elevator.intake.coralMotor.set(0.1)
+            self.elevator.intake.coralMotor.set(-0.2)
         else:
             self.elevator.intake.coralMotor.set(0.0)
             #self.elevator.moveElevatorRaw(0.0)

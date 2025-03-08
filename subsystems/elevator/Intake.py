@@ -17,7 +17,8 @@ class IntakeConstants:
     REEF_ACTIVE_TIME = 0.5
     STATION_ACTIVE_TIME = 8.0
 
-    CORAL_INTAKE_MAX_SPEED = 0.2
+    CORAL_INTAKE_SPEED = 0.6
+    CORAL_EJECT_SPEED = -0.2
     ALGAE_INTAKE_MAX_SPEED = 0.2
 
     LEVEL_1_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
@@ -28,13 +29,15 @@ class IntakeConstants:
     CORAL_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(72)
     CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(70) # stow up
 
-    CORAL_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER = math.pi/20 # Feb 15 2025
+    CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER = (1/9.52384) * -140# Feb 15 2025
+    CORAL_POSITION_OFFSET = 72
 
 
     ALGAE_PDP_CHANNEL = 11
     CORAL_PDP_CHANNEL = 13
     ALGAE_IN_CURRENT_THRESHOLD = 25
-    CORAL_IN_CURRENT_THRESHOLD = 25
+    CORAL_IN_CURRENT_THRESHOLD = 8
+    CORAL_EJECT_CURENT_THRESHOLD = 2
 
 
     CORAL_WRIST_PROPORTIONAL_GAIN = 0.05
@@ -74,6 +77,9 @@ class Intake:
     
     def zeroEncoder(self):
         self.coralWristEncoder.setPosition(0.0)
+    def getWristPosition(self) -> wpimath.geometry.Rotation2d:
+        position = self.coralWristEncoder.getPosition() * IntakeConstants.CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER
+        return wpimath.geometry.Rotation2d.fromDegrees(position + IntakeConstants.CORAL_POSITION_OFFSET)
 
     # returns true if intake/ejection is complete
     # def runIntakesTimed(self) -> bool:
@@ -112,7 +118,7 @@ class Intake:
     
     def runWrist(self):
         coralAmount = self.coralWristController.calculate(
-            self.coralWristEncoder.getPosition() * IntakeConstants.CORAL_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER,
+            self.getWristPosition().radians(),
             self.coralWristTarget.radians()
         )
 
@@ -153,7 +159,8 @@ class Intake:
         SmartDashboard.putNumber("coral current", self.pdpReference.getCurrent(IntakeConstants.CORAL_PDP_CHANNEL))
 
     def logWristPosition(self):
-        SmartDashboard.putNumber("coralWristPosition", self.coralWristEncoder.getPosition() * IntakeConstants.CORAL_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER)
+        SmartDashboard.putNumber("coralWristPosition", self.getWristPosition().degrees())
+        SmartDashboard.putNumber("raw coralWristPosition", self.coralWristEncoder.getPosition())
 
 
     
