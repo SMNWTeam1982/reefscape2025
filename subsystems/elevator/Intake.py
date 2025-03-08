@@ -27,22 +27,25 @@ class IntakeConstants:
     INTAKE_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(35)
 
     CORAL_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(72)
-    CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(70) # stow up
+    CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(50) # stow up
 
-    CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER = (1/9.52384) * -140# Feb 15 2025
+    CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER = (1/3.666663) * -133 # march 8 2025
     CORAL_POSITION_OFFSET = 72
 
 
     ALGAE_PDP_CHANNEL = 11
     CORAL_PDP_CHANNEL = 13
+    CORAL_WRIST_PDP_CHANNEL = 12
     ALGAE_IN_CURRENT_THRESHOLD = 25
     CORAL_IN_CURRENT_THRESHOLD = 8
     CORAL_EJECT_CURENT_THRESHOLD = 2
 
 
-    CORAL_WRIST_PROPORTIONAL_GAIN = 0.05
-    CORAL_WRIST_INTEGRAL_GAIN = 0.0
-    CORAL_WRIST_DERIVATIVE_GAIN = 0.0
+    CORAL_WRIST_PROPORTIONAL_GAIN = 0.007
+    CORAL_WRIST_INTEGRAL_GAIN = 0.002
+    CORAL_WRIST_DERIVATIVE_GAIN = 0.0002
+    
+    CORAL_WRIST_OUTPUT_LIMIT = 0.4
 
 
 class IntakeState(enum.Enum):
@@ -56,11 +59,31 @@ class Intake:
 
         self.coralWristMotor = rev.SparkMax(15,rev.SparkLowLevel.MotorType.kBrushless)
         self.coralWristEncoder = self.coralWristMotor.getEncoder()
+        self.coralWristMotor.configure(
+            rev.SparkBaseConfig().smartCurrentLimit(10,11000,1000),
+            rev.SparkBase.ResetMode.kResetSafeParameters,
+            rev.SparkBase.PersistMode.kPersistParameters
+        )
 
         self.coralMotor = rev.SparkMax(16,rev.SparkLowLevel.MotorType.kBrushless)
+        self.coralMotor.configure(
+            rev.SparkBaseConfig().smartCurrentLimit(10,11000,2000),
+            rev.SparkBase.ResetMode.kResetSafeParameters,
+            rev.SparkBase.PersistMode.kPersistParameters
+        )
 
         self.rightAlgaeMotor = rev.SparkMax(14,rev.SparkLowLevel.MotorType.kBrushless)
+        self.rightAlgaeMotor.configure(
+            rev.SparkBaseConfig().smartCurrentLimit(10,11000,2000),
+            rev.SparkBase.ResetMode.kResetSafeParameters,
+            rev.SparkBase.PersistMode.kPersistParameters
+        )
         self.leftAlgaeMotor = rev.SparkMax(13,rev.SparkLowLevel.MotorType.kBrushless)
+        self.leftAlgaeMotor.configure(
+            rev.SparkBaseConfig().smartCurrentLimit(10,11000,2000),
+            rev.SparkBase.ResetMode.kResetSafeParameters,
+            rev.SparkBase.PersistMode.kPersistParameters
+        )
 
         # self.cooldownTimer = wpilib.Timer()
 
@@ -70,7 +93,8 @@ class Intake:
             IntakeConstants.CORAL_WRIST_DERIVATIVE_GAIN
         )
         
-        self.coralWristTarget = IntakeConstants.CORAL_WRIST_STARTING_POSITION
+        self.coralWristController.setTolerance(1) # degree
+        self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
 
         self.algaeIntakeState = IntakeState.Hold
         self.coralIntakeState = IntakeState.Hold
@@ -118,11 +142,17 @@ class Intake:
     
     def runWrist(self):
         coralAmount = self.coralWristController.calculate(
-            self.getWristPosition().radians(),
-            self.coralWristTarget.radians()
+            self.getWristPosition().degrees(),
+            self.coralWristTarget.degrees()
         )
+        
+        if abs(coralAmount) > IntakeConstants.CORAL_WRIST_OUTPUT_LIMIT:
+            if coralAmount > 0:
+                coralAmount = IntakeConstants.CORAL_WRIST_OUTPUT_LIMIT
+            else:
+                coralAmount = -IntakeConstants.CORAL_WRIST_OUTPUT_LIMIT
 
-        self.coralWristMotor.set(coralAmount)
+        self.coralWristMotor.set(-coralAmount)
 
     def runIntakeEject(self) -> bool:
         if self.coralIntakeState == IntakeState.In:
@@ -161,6 +191,16 @@ class Intake:
     def logWristPosition(self):
         SmartDashboard.putNumber("coralWristPosition", self.getWristPosition().degrees())
         SmartDashboard.putNumber("raw coralWristPosition", self.coralWristEncoder.getPosition())
+    def logPIDErrors(self):
+        SmartDashboard.putNumber("wrist p error", self.coralWristController.getError())
+        SmartDashboard.putNumber("wrist i error", self.coralWristController.getAccumulatedError())
+        SmartDashboard.putNumber("wrist d error", self.coralWristController.getErrorDerivative())
+        
+    def logMotorStats(self):
+        SmartDashboard.putNumber("wrist current",self.coralWristMotor.getOutputCurrent())
+        SmartDashboard.putNumber("wrist temperature",self.coralWristMotor.getMotorTemperature())
+        
+        
 
 
     

@@ -32,6 +32,8 @@ class MyRobot(wpilib.TimedRobot):
         self.elevator.LogRawElevatorHeights()
         self.elevator.intake.logIntakeCurrents()
         self.elevator.intake.logWristPosition()
+        self.elevator.intake.logPIDErrors()
+        self.elevator.intake.logMotorStats()
         self.drive.logPoseEstimation()
 
         #if self.driveController.getAButton():
@@ -49,7 +51,7 @@ class MyRobot(wpilib.TimedRobot):
 
         # for running the PIDs
         if self.driveController.getAButton():
-            self.elevator.setL1() # runs the elevator pid
+            self.elevator.setStation() # runs the elevator pid
 
         if self.driveController.getXButton(): # run the wrist when pressing X
             self.elevator.intake.runWrist()
@@ -59,6 +61,7 @@ class MyRobot(wpilib.TimedRobot):
             self.elevator.setIdle()
         if self.driveController.getYButton(): # zero wrist encoders
             self.elevator.intake.zeroEncoder()
+            self.elevator.intake.coralWristMotor.set(0)
         
         # for running the elevator manually
         if self.driveController.getRightBumper():
