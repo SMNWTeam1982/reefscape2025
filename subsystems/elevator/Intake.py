@@ -21,11 +21,11 @@ class IntakeConstants:
     ALGAE_INTAKE_MAX_SPEED = 0.2
 
     LEVEL_1_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
-    LEVEL_MID_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-10)
-    LEVEL_4_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-20)
+    LEVEL_MID_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-35)
+    LEVEL_4_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-10)
     INTAKE_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(35)
 
-    CORAL_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-5)
+    CORAL_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(72)
     CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(70) # stow up
 
     CORAL_ENCODER_ROTATIONS_TO_RADIANS_MULTIPLIER = math.pi/20 # Feb 15 2025
