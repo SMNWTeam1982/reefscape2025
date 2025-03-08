@@ -61,11 +61,14 @@ class MyRobot(wpilib.TimedRobot):
         
         # for running the elevator manually
         if self.driveController.getRightBumper():
-            self.elevator.moveElevatorRaw(0.2)
+            #self.elevator.moveElevatorRaw(0.2)
+            self.elevator.intake.coralMotor.set(0.1)
         elif self.driveController.getLeftBumper():
-            self.elevator.moveElevatorRaw(-0.2)
+            #self.elevator.moveElevatorRaw(-0.2)
+            self.elevator.intake.coralMotor.set(0.1)
         else:
-            self.elevator.moveElevatorRaw(0.0)
+            self.elevator.intake.coralMotor.set(0.0)
+            #self.elevator.moveElevatorRaw(0.0)
 
         # returning early causes the code to not work, I commented everything else out instead
         #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
