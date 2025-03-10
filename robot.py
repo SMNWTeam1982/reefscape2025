@@ -6,6 +6,7 @@ from subsystems.swerve import Drive
 from subsystems.auto import Auto, ReefNavigator
 from subsystems.elevator import Elevator
 from subsystems.climber import Climber
+from wpilib import SmartDashboard
 # from photonlibpy.photonPoseEstimator import PoseStrategy
 # from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
@@ -28,18 +29,32 @@ class MyRobot(wpilib.TimedRobot):
         self.runningReefNavigation = False
 
     def robotPeriodic(self):
-        self.elevator.logElevatorHeight()
-        self.elevator.LogRawElevatorHeights()
+        #self.elevator.logElevatorHeight()
+        #self.elevator.LogRawElevatorHeights()
         self.elevator.intake.logIntakeCurrents()
         self.elevator.intake.logWristPosition()
         self.elevator.intake.logPIDErrors()
         self.elevator.intake.logMotorStats()
-        self.drive.logPoseEstimation()
+        #self.drive.logPoseEstimation()
 
-        #if self.driveController.getAButton():
-            #self.drive.displayDrivePID()
-        #if self.driveController.getBButton():
-            #self.drive.updateDrivePIDs()
+        # set the controller below to the one desired for live pid tuning
+
+        controller = self.elevator.intake.coralWristController
+
+        if self.driveController.getPOV() == 0:
+            p = controller.getP()
+            i = controller.getI()
+            d = controller.getD()
+
+            SmartDashboard.putNumber("p",p)
+            SmartDashboard.putNumber("i",i)
+            SmartDashboard.putNumber("d",d)
+        if self.driveController.getPOV() == 180:
+            p = SmartDashboard.getNumber("p",0)
+            i = SmartDashboard.getNumber("i",0)
+            d = SmartDashboard.getNumber("d",0)
+
+            controller.setPID(p,i,d)
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
@@ -49,21 +64,18 @@ class MyRobot(wpilib.TimedRobot):
         pass
     def teleopPeriodic(self):
 
-        # for running the PIDs
         if self.driveController.getAButton():
-            self.elevator.setStation() # runs the elevator pid
+            self.elevator.setStation()
 
         if self.driveController.getXButton(): # run the wrist when pressing X
             self.elevator.intake.runWrist()
 
-        if self.driveController.getBButton(): # z
-            #zero elevator encoders
+        if self.driveController.getBButton():
             self.elevator.setIdle()
         if self.driveController.getYButton(): # zero wrist encoders
             self.elevator.intake.zeroEncoder()
             self.elevator.intake.coralWristMotor.set(0)
-        
-        # for running the elevator manually
+
         if self.driveController.getRightBumper():
             #self.elevator.moveElevatorRaw(0.2)
             self.elevator.intake.coralMotor.set(0.6)
@@ -111,24 +123,24 @@ class MyRobot(wpilib.TimedRobot):
         #    self.auto.pathCommand.cancel()
         #    self.runningReefNavigation = False
 
-        if self.runningReefNavigation:
-            if self.auto.runAuto(): # check if its done and end nav when it is
-                self.runningReefNavigation = False
-            else:
-                return # dont let the driver have control while nav is runnig
+        # if self.runningReefNavigation:
+        #     if self.auto.runAuto(): # check if its done and end nav when it is
+        #         self.runningReefNavigation = False
+        #     else:
+        #         return # dont let the driver have control while nav is runnig
 
         # ---------- driver controls below this line --------------------------
 
-        x = -self.driveController.getLeftX()
-        y = self.driveController.getLeftY()
-        turn = self.driveController.getRightX()
+        # x = -self.driveController.getLeftX()
+        # y = self.driveController.getLeftY()
+        # turn = self.driveController.getRightX()
 
-        self.drive.drive(
-            self.deadzone(x),
-            self.deadzone(y),
-            self.deadzone(turn),
-            True
-        )
+        # self.drive.drive(
+        #     self.deadzone(x),
+        #     self.deadzone(y),
+        #     self.deadzone(turn),
+        #     True
+        # )
         # Commented out for elevator testing - Kay 3/5
         #if self.driveController.getXButton(): # set left pos
         #    targetPose = ReefNavigator.getNearestLeft(self.drive.getPose())
