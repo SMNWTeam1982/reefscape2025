@@ -65,26 +65,26 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
 
         if self.driveController.getAButton():
-            self.elevator.setStation()
+            self.elevator.setL3Algae()
 
         if self.driveController.getXButton(): # run the wrist when pressing X
-            self.elevator.intake.runWrist()
+            self.elevator.setL3Coral()
 
         if self.driveController.getBButton():
-            self.elevator.setIdle()
+            self.elevator.intake.runIntakeEject()
         if self.driveController.getYButton(): # zero wrist encoders
             self.elevator.intake.zeroEncoder()
             self.elevator.intake.coralWristMotor.set(0)
 
         if self.driveController.getRightBumper():
-            #self.elevator.moveElevatorRaw(0.2)
-            self.elevator.intake.coralMotor.set(0.6)
+            self.elevator.moveElevatorRaw(0.2)
+            #self.elevator.intake.coralMotor.set(0.6)
         elif self.driveController.getLeftBumper():
-            #self.elevator.moveElevatorRaw(-0.2)
-            self.elevator.intake.coralMotor.set(-0.2)
+            self.elevator.moveElevatorRaw(-0.2)
+            #self.elevator.intake.coralMotor.set(-0.2)
         else:
-            self.elevator.intake.coralMotor.set(0.0)
-            #self.elevator.moveElevatorRaw(0.0)
+            #self.elevator.intake.coralMotor.set(0.0)
+            self.elevator.moveElevatorRaw(0.0)
 
         # returning early causes the code to not work, I commented everything else out instead
         #return # early return for the sake of testing, this will make it so we can use the controls for other stuff

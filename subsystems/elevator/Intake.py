@@ -19,7 +19,7 @@ class IntakeConstants:
 
     CORAL_INTAKE_SPEED = 0.6
     CORAL_EJECT_SPEED = -0.2
-    ALGAE_INTAKE_MAX_SPEED = 0.2
+    ALGAE_INTAKE_MAX_SPEED = 0.5
 
     LEVEL_1_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
     LEVEL_MID_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-35)
@@ -47,8 +47,8 @@ class IntakeConstants:
     
     CORAL_WRIST_OUTPUT_LIMIT = 0.4
 
-    WRIST_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(10,10,5000)
-    INTAKE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(10,10,8000)
+    WRIST_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(10,15,5000)
+    INTAKE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(10,15,8000)
 
 
 class IntakeState(enum.Enum):
@@ -159,11 +159,11 @@ class Intake:
 
     def runIntakeEject(self) -> bool:
         if self.coralIntakeState == IntakeState.In:
-            self.coralMotor.set(-IntakeConstants.CORAL_INTAKE_MAX_SPEED)
+            self.coralMotor.set(-IntakeConstants.CORAL_INTAKE_SPEED)
             # if self.coralAllTheWayIn(): state will be controlled from the elevator state machines
             #     self.setIdle() 
         if self.coralIntakeState == IntakeState.Out:
-            self.coralMotor.set(IntakeConstants.CORAL_INTAKE_MAX_SPEED)
+            self.coralMotor.set(IntakeConstants.CORAL_EJECT_SPEED)
         if self.coralIntakeState == IntakeState.Hold:
             self.coralMotor.set(0.0)
 
