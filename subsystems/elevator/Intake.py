@@ -119,6 +119,11 @@ class Intake:
         self.coralIntakeState = IntakeState.Hold
 
 
+
+        self.objectInTestingVariable = False # variables for testing
+        self.objectOutTestingVariable = True
+
+
     
     def zeroEncoder(self):
         self.coralWristEncoder.setPosition(0.0)
@@ -164,25 +169,31 @@ class Intake:
 
 
     def algaeAllTheWayIn(self) -> bool:
+        return self.objectInTestingVariable
+
         for current in self.previousAlgaeCurrents:
             if current < IntakeConstants.ALGAE_IN_CURRENT_THRESHOLD:
                 return False
         return True
     
     def algaeAllTheWayOut(self) -> bool:
+        return self.objectOutTestingVariable
         return False # todo
     
 
     def coralAllTheWayIn(self) -> bool:
+        return self.objectInTestingVariable
         for current in self.previousCoralCurrents:
             if current < IntakeConstants.CORAL_IN_CURRENT_THRESHOLD:
                 return False
         return True
     
     def coralAllTheWayOut(self) -> bool:
+        return self.objectOutTestingVariable
         return False # todo
     
     def runWrist(self):
+        return # early return for testing the elevator state machine
         wristPosition = self.getWristPosition()
         pidAmount = self.coralWristController.calculate(
             self.getWristPosition().radians,
@@ -207,7 +218,8 @@ class Intake:
     def setTargetAngle(self,targetAngleDegrees: float):
         self.coralWristTarget = wpimath.geometry.Rotation2d.fromDegrees(targetAngleDegrees)
 
-    def runIntakeEject(self) -> bool:
+    def runIntakeEject(self):
+        return # early return for testing the elevator state machine
         if self.coralIntakeState == IntakeState.In:
             self.coralMotor.set(-IntakeConstants.CORAL_INTAKE_SPEED)
             # if self.coralAllTheWayIn(): state will be controlled from the elevator state machines

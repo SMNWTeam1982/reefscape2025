@@ -39,7 +39,7 @@ class MyRobot(wpilib.TimedRobot):
 
         # set the controller below to the one desired for live pid tuning
 
-        controller = self.elevator.intake.coralWristController
+        controller = self.elevator.altitudePIDController
 
         if self.driveController.getPOV() == 0:
             p = controller.getP()
@@ -71,23 +71,28 @@ class MyRobot(wpilib.TimedRobot):
             self.elevator.setL3Coral()
 
         if self.driveController.getBButton():
-            self.elevator.intake.runWrist()
+            #self.elevator.intake.runWrist()
+            self.elevator.runStateMachine()
         if self.driveController.getYButton(): # zero wrist encoders
-            self.elevator.intake.zeroEncoder()
-            self.elevator.intake.coralWristMotor.set(0)
+            self.elevator.zer0AltitudeEncoders()
+            #self.elevator.intake.zeroEncoder()
+            #self.elevator.intake.coralWristMotor.set(0)
 
         if self.driveController.getRightBumper():
             #self.elevator.moveElevatorRaw(0.2)
             #self.elevator.intake.coralMotor.set(0.6)
-            pass
+            self.elevator.intake.objectOutTestingVariable = True
+            self.elevator.intake.objectInTestingVariable = False
         elif self.driveController.getLeftBumper():
+            self.elevator.intake.objectOutTestingVariable = False
+            self.elevator.intake.objectInTestingVariable = True
             #self.elevator.moveElevatorRaw(-0.2)
             #self.elevator.intake.coralMotor.set(-0.2)
-            pass
         else:
             #self.elevator.intake.coralMotor.set(0.0)
             #self.elevator.moveElevatorRaw(0.0)
-            pass
+            self.elevator.intake.objectOutTestingVariable = False
+            self.elevator.intake.objectInTestingVariable = False
 
         # returning early causes the code to not work, I commented everything else out instead
         #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
