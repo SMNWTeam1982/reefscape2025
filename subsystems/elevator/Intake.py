@@ -41,14 +41,14 @@ class IntakeConstants:
     CORAL_EJECT_CURENT_THRESHOLD = 2
 
 
-    CORAL_WRIST_PROPORTIONAL_GAIN = 0.007
-    CORAL_WRIST_INTEGRAL_GAIN = 0.002
-    CORAL_WRIST_DERIVATIVE_GAIN = 0.0002
+    CORAL_WRIST_PROPORTIONAL_GAIN = 0.01
+    CORAL_WRIST_INTEGRAL_GAIN = 0#0.0025
+    CORAL_WRIST_DERIVATIVE_GAIN = 0#0.0003
     
     CORAL_WRIST_OUTPUT_LIMIT = 0.4
 
-    WRIST_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(10,15,5000)
-    INTAKE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(10,15,8000)
+    WRIST_MOTOR_CONFIG = rev.SparkBaseConfig()#.smartCurrentLimit(12,15,11000)
+    INTAKE_MOTOR_CONFIG = rev.SparkBaseConfig()#.smartCurrentLimit(20,20,11000)
 
 
 class IntakeState(enum.Enum):
@@ -96,6 +96,8 @@ class Intake:
             IntakeConstants.CORAL_WRIST_DERIVATIVE_GAIN
         )
         
+        self.coralWristController.enableContinuousInput(0,360)
+        
         self.coralWristController.setTolerance(1) # degree
         self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
 
@@ -106,7 +108,9 @@ class Intake:
         self.coralWristEncoder.setPosition(0.0)
     def getWristPosition(self) -> wpimath.geometry.Rotation2d:
         position = self.coralWristEncoder.getPosition() * IntakeConstants.CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER
-        return wpimath.geometry.Rotation2d.fromDegrees(position + IntakeConstants.CORAL_POSITION_OFFSET)
+        positionRotation2d = wpimath.geometry.Rotation2d.fromDegrees(position + IntakeConstants.CORAL_POSITION_OFFSET)
+        positionRadians = wpimath.angleModulus(positionRotation2d.radians())
+        return wpimath.geometry.Rotation2d(positionRadians)
 
     # returns true if intake/ejection is complete
     # def runIntakesTimed(self) -> bool:
@@ -194,6 +198,7 @@ class Intake:
     def logWristPosition(self):
         SmartDashboard.putNumber("coralWristPosition", self.getWristPosition().degrees())
         SmartDashboard.putNumber("raw coralWristPosition", self.coralWristEncoder.getPosition())
+        SmartDashboard.putNumber("target wrist position", self.coralWristTarget.degrees())
 
     def logPIDErrors(self):
         SmartDashboard.putNumber("wrist p error", self.coralWristController.getError())

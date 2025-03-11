@@ -71,20 +71,23 @@ class MyRobot(wpilib.TimedRobot):
             self.elevator.setL3Coral()
 
         if self.driveController.getBButton():
-            self.elevator.intake.runIntakeEject()
+            self.elevator.intake.runWrist()
         if self.driveController.getYButton(): # zero wrist encoders
             self.elevator.intake.zeroEncoder()
             self.elevator.intake.coralWristMotor.set(0)
 
         if self.driveController.getRightBumper():
-            self.elevator.moveElevatorRaw(0.2)
+            #self.elevator.moveElevatorRaw(0.2)
             #self.elevator.intake.coralMotor.set(0.6)
+            pass
         elif self.driveController.getLeftBumper():
-            self.elevator.moveElevatorRaw(-0.2)
+            #self.elevator.moveElevatorRaw(-0.2)
             #self.elevator.intake.coralMotor.set(-0.2)
+            pass
         else:
             #self.elevator.intake.coralMotor.set(0.0)
-            self.elevator.moveElevatorRaw(0.0)
+            #self.elevator.moveElevatorRaw(0.0)
+            pass
 
         # returning early causes the code to not work, I commented everything else out instead
         #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
@@ -131,16 +134,16 @@ class MyRobot(wpilib.TimedRobot):
 
         # ---------- driver controls below this line --------------------------
 
-        # x = -self.driveController.getLeftX()
-        # y = self.driveController.getLeftY()
-        # turn = self.driveController.getRightX()
+        x = -self.driveController.getLeftX()
+        y = self.driveController.getLeftY()
+        turn = self.driveController.getRightX()
 
-        # self.drive.drive(
-        #     self.deadzone(x),
-        #     self.deadzone(y),
-        #     self.deadzone(turn),
-        #     True
-        # )
+        self.drive.drive(
+            self.deadzone(x),
+            self.deadzone(y),
+            self.deadzone(turn),
+            True
+        )
         # Commented out for elevator testing - Kay 3/5
         #if self.driveController.getXButton(): # set left pos
         #    targetPose = ReefNavigator.getNearestLeft(self.drive.getPose())
