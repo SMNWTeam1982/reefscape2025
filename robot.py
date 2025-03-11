@@ -64,30 +64,30 @@ class MyRobot(wpilib.TimedRobot):
         pass
     def teleopPeriodic(self):
 
-        if self.driveController.getAButton():
-            self.elevator.setL3Algae()
+        # if self.driveController.getAButton():
+        #     self.elevator.setL3Algae()
 
-        if self.driveController.getXButton(): # run the wrist when pressing X
-            self.elevator.setL3Coral()
+        # if self.driveController.getXButton(): # run the wrist when pressing X
+        #     self.elevator.setL3Coral()
 
-        if self.driveController.getBButton():
-            self.elevator.intake.runWrist()
-        if self.driveController.getYButton(): # zero wrist encoders
-            self.elevator.intake.zeroEncoder()
-            self.elevator.intake.coralWristMotor.set(0)
+        # if self.driveController.getBButton():
+        #     self.elevator.intake.runWrist()
+        # if self.driveController.getYButton(): # zero wrist encoders
+        #     self.elevator.intake.zeroEncoder()
+        #     self.elevator.intake.coralWristMotor.set(0)
 
-        if self.driveController.getRightBumper():
-            #self.elevator.moveElevatorRaw(0.2)
-            #self.elevator.intake.coralMotor.set(0.6)
-            pass
-        elif self.driveController.getLeftBumper():
-            #self.elevator.moveElevatorRaw(-0.2)
-            #self.elevator.intake.coralMotor.set(-0.2)
-            pass
-        else:
-            #self.elevator.intake.coralMotor.set(0.0)
-            #self.elevator.moveElevatorRaw(0.0)
-            pass
+        # if self.driveController.getRightBumper():
+        #     #self.elevator.moveElevatorRaw(0.2)
+        #     #self.elevator.intake.coralMotor.set(0.6)
+        #     pass
+        # elif self.driveController.getLeftBumper():
+        #     #self.elevator.moveElevatorRaw(-0.2)
+        #     #self.elevator.intake.coralMotor.set(-0.2)
+        #     pass
+        # else:
+        #     #self.elevator.intake.coralMotor.set(0.0)
+        #     #self.elevator.moveElevatorRaw(0.0)
+        #     pass
 
         # returning early causes the code to not work, I commented everything else out instead
         #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
