@@ -70,6 +70,8 @@ class Intake:
             rev.SparkBase.PersistMode.kPersistParameters
         )
 
+        self.zeroEncoder()
+
         self.coralMotor = rev.SparkMax(16,rev.SparkLowLevel.MotorType.kBrushless)
         self.coralMotor.configure(
             IntakeConstants.INTAKE_MOTOR_CONFIG,
@@ -109,8 +111,14 @@ class Intake:
         self.coralWristController.setTolerance(1) # degree
         self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
 
+        # these are to record algae currents to know if we have been above threshold for 0.1 seconds (0.02s per cycle * 5 cycles)
+        self.previousAlgaeCurrents = [0.0, 0.0, 0.0, 0.0, 0.0]
+        self.previousCoralCurrents = [0.0, 0.0, 0.0, 0.0, 0.0]
+
         self.algaeIntakeState = IntakeState.Hold
         self.coralIntakeState = IntakeState.Hold
+
+
     
     def zeroEncoder(self):
         self.coralWristEncoder.setPosition(0.0)
@@ -145,13 +153,32 @@ class Intake:
     #         self.rightAlgeaMotor.stopMotor()
     #         return True
 
+    def updateCurrentDrawHistory(self): # current as in amps
+        # pop the back and push to the front
+        # remove the oldest one and add a new measurement
+        self.previousAlgaeCurrents.pop(0)
+        self.previousAlgaeCurrents.append(self.pdpReference.getCurrent(IntakeConstants.ALGAE_PDP_CHANNEL))
+
+        self.previousCoralCurrents.pop(0)
+        self.previousCoralCurrents.append(self.pdpReference.getCurrent(IntakeConstants.CORAL_PDP_CHANNEL))
+
+
     def algaeAllTheWayIn(self) -> bool:
-        return self.pdpReference.getCurrent(IntakeConstants.ALGAE_PDP_CHANNEL) > IntakeConstants.ALGAE_IN_CURRENT_THRESHOLD
+        for current in self.previousAlgaeCurrents:
+            if current < IntakeConstants.ALGAE_IN_CURRENT_THRESHOLD:
+                return False
+        return True
+    
     def algaeAllTheWayOut(self) -> bool:
         return False # todo
     
+
     def coralAllTheWayIn(self) -> bool:
-        return self.pdpReference.getCurrent(IntakeConstants.CORAL_PDP_CHANNEL) > IntakeConstants.CORAL_IN_CURRENT_THRESHOLD
+        for current in self.previousCoralCurrents:
+            if current < IntakeConstants.CORAL_IN_CURRENT_THRESHOLD:
+                return False
+        return True
+    
     def coralAllTheWayOut(self) -> bool:
         return False # todo
     
@@ -174,7 +201,7 @@ class Intake:
                 output = 12.0
             else:
                 output = -12.0
-        
+
         self.coralWristMotor.setVoltage(-output)
 
     def setTargetAngle(self,targetAngleDegrees: float):

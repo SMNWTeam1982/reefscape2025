@@ -100,6 +100,7 @@ class Elevator:
     def moveElevatorAndWrist(self):
         self.moveElevator()
         self.intake.runWrist()
+        self.intake.updateCurrentDrawHistory()
 
     def runStateMachine(self):
         self.activeStateMachine()
