@@ -29,12 +29,13 @@ class MyRobot(wpilib.TimedRobot):
         self.runningReefNavigation = False
 
     def robotPeriodic(self):
-        #self.elevator.logElevatorHeight()
-        #self.elevator.LogRawElevatorHeights()
-        self.elevator.intake.logIntakeCurrents()
-        self.elevator.intake.logWristPosition()
-        self.elevator.intake.logPIDErrors()
-        self.elevator.intake.logMotorStats()
+        self.elevator.logElevatorHeight()
+        self.elevator.LogRawElevatorHeights()
+        self.elevator.logElevatorCurrents()
+        #self.elevator.intake.logIntakeCurrents()
+        #self.elevator.intake.logWristPosition()
+        #self.elevator.intake.logPIDErrors()
+        #self.elevator.intake.logMotorStats()
         #self.drive.logPoseEstimation()
 
         # set the controller below to the one desired for live pid tuning
@@ -55,6 +56,10 @@ class MyRobot(wpilib.TimedRobot):
             d = SmartDashboard.getNumber("d",0)
 
             controller.setPID(p,i,d)
+            
+        SmartDashboard.putNumber("p error", controller.getError())
+        SmartDashboard.putNumber("i error", controller.getAccumulatedError())
+        SmartDashboard.putNumber("d error", controller.getErrorDerivative())
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
@@ -65,7 +70,7 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
 
         if self.driveController.getAButton():
-            self.elevator.setL3Algae()
+            self.elevator.setL2()
 
         if self.driveController.getXButton(): # run the wrist when pressing X
             self.elevator.setL3Coral()
@@ -73,6 +78,8 @@ class MyRobot(wpilib.TimedRobot):
         if self.driveController.getBButton():
             #self.elevator.intake.runWrist()
             self.elevator.runStateMachine()
+        else:
+            self.elevator.moveElevatorRaw(0.0)
         if self.driveController.getYButton(): # zero wrist encoders
             self.elevator.zer0AltitudeEncoders()
             #self.elevator.intake.zeroEncoder()
@@ -96,7 +103,6 @@ class MyRobot(wpilib.TimedRobot):
 
         # returning early causes the code to not work, I commented everything else out instead
         #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
-        
 
         #if self.operatorController.getButton(2):
         #    self.elevator.setL1()

@@ -29,7 +29,7 @@ class ElevatorConstants:
 
     IDLE_TARGET_HEIGHT = 0.55
 
-    ALTITUDE_PROPORTIONAL_GAIN = 0.1
+    ALTITUDE_PROPORTIONAL_GAIN = 3
     ALTITUDE_INTEGRAL_GAIN = 0.0
     ALTITUDE_DERIVATIVE_GAIN = 0.0
 
@@ -37,15 +37,27 @@ class ElevatorConstants:
     ELEVATOR_HEIGHT_OFFSET = 0.53
     ELEVATOR_MAX_HEIGHT_METERS = 1.81
     ELEVATOR_MIN_HEIGHT_METERS = ELEVATOR_HEIGHT_OFFSET
+    
+    ALTITUDE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(50)
 
 class Elevator:
     def __init__(self, pdpReference: wpilib.PowerDistribution):
         self.pdpReference = pdpReference
         self.leftAltitudeMotor = rev.SparkMax(11,rev.SparkLowLevel.MotorType.kBrushless)
         self.leftAltitudeEncoder = self.leftAltitudeMotor.getEncoder()
+        self.leftAltitudeMotor.configure(
+            ElevatorConstants.ALTITUDE_MOTOR_CONFIG,
+            rev.SparkBase.ResetMode.kResetSafeParameters,
+            rev.SparkBase.PersistMode.kPersistParameters
+        )
 
         self.rightAltitudeMotor = rev.SparkMax(12,rev.SparkLowLevel.MotorType.kBrushless)
         self.rightAltitudeEncoder = self.rightAltitudeMotor.getEncoder()
+        self.rightAltitudeMotor.configure(
+            ElevatorConstants.ALTITUDE_MOTOR_CONFIG,
+            rev.SparkBase.ResetMode.kResetSafeParameters,
+            rev.SparkBase.PersistMode.kPersistParameters
+        )
 
         self.altitudePIDController = wpimath.controller.PIDController(
             ElevatorConstants.ALTITUDE_PROPORTIONAL_GAIN,
@@ -78,20 +90,38 @@ class Elevator:
         rightPos = self.rightAltitudeEncoder.getPosition()
 
         SmartDashboard.putNumber("raw altitude encoder left",leftPos)
+        SmartDashboard.putNumber(
+            "computed altitude encoder left",
+            leftPos * ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER + ElevatorConstants.ELEVATOR_HEIGHT_OFFSET
+        )
         SmartDashboard.putNumber("raw altitude encoder right",rightPos)
+        SmartDashboard.putNumber(
+            "computed altitude encoder right",
+            -rightPos * ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER + ElevatorConstants.ELEVATOR_HEIGHT_OFFSET
+        )
 
         SmartDashboard.putNumber("average raw altitude", (leftPos - rightPos) / 2)
     
     def logElevatorHeight(self):
         SmartDashboard.putNumber("elevator height",self.getElevatorHeight())
         SmartDashboard.putNumber("target height",self.targetHeight)
+        
+    def logElevatorCurrents(self):
+        SmartDashboard.putNumber("right elevator current", self.rightAltitudeMotor.getOutputCurrent())
+        SmartDashboard.putNumber("left elevator current", self.leftAltitudeMotor.getOutputCurrent())
 
     def moveElevator(self): # run pid
-        amount = self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)
+        output = -self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)
+        
+        if abs(output) > 1.0:
+            if output > 0.0:
+                output = 1.0
+            else:
+                output = -1.0
         
         # one will need to be negated, we dont know which one yet
-        self.leftAltitudeMotor.set(-amount)
-        self.rightAltitudeMotor.set(amount)
+        self.leftAltitudeMotor.set(-output)
+        self.rightAltitudeMotor.set(output)
 
     def moveElevatorRaw(self,amount: float):
         self.leftAltitudeMotor.set(-amount)
