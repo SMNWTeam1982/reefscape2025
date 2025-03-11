@@ -19,9 +19,9 @@ class ModuleConstants:
     POSITION_TO_METERS_TRAVELED_MULTIPLIER = 0.2855
 
     # assume all values are untuned unless specified with a date of tuning
-    TURN_PROPORTIONAL_GAIN = 0.73 *1 # Jan 18 2025
+    TURN_PROPORTIONAL_GAIN = 0.73 # Jan 18 2025
     TURN_INTEGRAL_GAIN = 0.0 # Jan 18 2025
-    TURN_DERIVATIVE_GAIN = 0.01 *1 # Jan 18 2025
+    TURN_DERIVATIVE_GAIN = 0.01 # Jan 18 2025
 
     # assume all values are untuned unless specified with a date of tuning
     DRIVE_PROPORTIONAL_GAIN = 0.0
@@ -99,7 +99,8 @@ class Wheel:
         )
 
     def setDesiredState(
-        self, desiredState: wpimath.kinematics.SwerveModuleState
+        self,
+        desiredState: wpimath.kinematics.SwerveModuleState
     ) -> None:
         """Sets the desired state for the module.
 
@@ -114,13 +115,12 @@ class Wheel:
         # Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
         # direction of travel that can occur when modules change directions. This results in smoother
         # driving.
-
         desiredState.cosineScale(encoderRotation)
 
         # Calculate the drive output from the drive PID controller. this will be added to the FF voltage
         driveOutput = self.drivePIDController.calculate(
             self.driveEncoder.getVelocity(), desiredState.speed
-        )
+        ) # this is wrong - zach march 11
 
         driveFeedforward = self.driveFeedforward.calculate(desiredState.speed) # converts mps to volts
 

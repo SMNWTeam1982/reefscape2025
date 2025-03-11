@@ -22,7 +22,7 @@ class IntakeConstants:
     ALGAE_INTAKE_MAX_SPEED = 0.5
 
     LEVEL_1_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
-    LEVEL_MID_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-35)
+    LEVEL_MID_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-15)
     LEVEL_4_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-10)
     INTAKE_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(35)
 
@@ -30,25 +30,27 @@ class IntakeConstants:
     CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(50) # stow up
 
     CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER = (1/3.666663) * -133 # march 8 2025
-    CORAL_POSITION_OFFSET = 72
+    CORAL_POSITION_OFFSET = 72 # march something 2025
 
 
     ALGAE_PDP_CHANNEL = 11
     CORAL_PDP_CHANNEL = 13
     CORAL_WRIST_PDP_CHANNEL = 12
+
     ALGAE_IN_CURRENT_THRESHOLD = 25
-    CORAL_IN_CURRENT_THRESHOLD = 8
+    CORAL_IN_CURRENT_THRESHOLD = 10
     CORAL_EJECT_CURENT_THRESHOLD = 2
 
-
-    CORAL_WRIST_PROPORTIONAL_GAIN = 0.01
-    CORAL_WRIST_INTEGRAL_GAIN = 0#0.0025
-    CORAL_WRIST_DERIVATIVE_GAIN = 0#0.0003
+    CORAL_WRIST_GRAVITY_GAIN = 0.25 # initial guess
+    CORAL_WRIST_VELOCITY_GAIN = 0.0
+    CORAL_WRIST_PROPORTIONAL_GAIN = 0.0
+    CORAL_WRIST_INTEGRAL_GAIN = 0
+    CORAL_WRIST_DERIVATIVE_GAIN = 0
     
     CORAL_WRIST_OUTPUT_LIMIT = 0.4
 
-    WRIST_MOTOR_CONFIG = rev.SparkBaseConfig()#.smartCurrentLimit(12,15,11000)
-    INTAKE_MOTOR_CONFIG = rev.SparkBaseConfig()#.smartCurrentLimit(20,20,11000)
+    WRIST_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(15)
+    INTAKE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25)
 
 
 class IntakeState(enum.Enum):
@@ -90,6 +92,12 @@ class Intake:
 
         # self.cooldownTimer = wpilib.Timer()
 
+        self.coralWristFeedForeward = wpimath.controller.ArmFeedforward(
+            0.0,
+            IntakeConstants.CORAL_WRIST_GRAVITY_GAIN,
+            IntakeConstants.CORAL_WRIST_VELOCITY_GAIN
+        )
+
         self.coralWristController = wpimath.controller.PIDController(
             IntakeConstants.CORAL_WRIST_PROPORTIONAL_GAIN,
             IntakeConstants.CORAL_WRIST_INTEGRAL_GAIN,
@@ -106,10 +114,10 @@ class Intake:
     
     def zeroEncoder(self):
         self.coralWristEncoder.setPosition(0.0)
+        
     def getWristPosition(self) -> wpimath.geometry.Rotation2d:
-        position = self.coralWristEncoder.getPosition() * IntakeConstants.CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER
-        positionRotation2d = wpimath.geometry.Rotation2d.fromDegrees(position + IntakeConstants.CORAL_POSITION_OFFSET)
-        positionRadians = wpimath.angleModulus(positionRotation2d.radians())
+        position = self.coralWristEncoder.getPosition() * IntakeConstants.CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER + IntakeConstants.CORAL_POSITION_OFFSET
+        positionRadians = wpimath.angleModulus(wpimath.units.degreesToRadians(position))
         return wpimath.geometry.Rotation2d(positionRadians)
 
     # returns true if intake/ejection is complete
@@ -148,18 +156,29 @@ class Intake:
         return False # todo
     
     def runWrist(self):
-        coralAmount = self.coralWristController.calculate(
-            self.getWristPosition().degrees(),
-            self.coralWristTarget.degrees()
-        )
-        
-        if abs(coralAmount) > IntakeConstants.CORAL_WRIST_OUTPUT_LIMIT:
-            if coralAmount > 0:
-                coralAmount = IntakeConstants.CORAL_WRIST_OUTPUT_LIMIT
-            else:
-                coralAmount = -IntakeConstants.CORAL_WRIST_OUTPUT_LIMIT
+        wristPosition = self.getWristPosition()
+        pidAmount = self.coralWristController.calculate(
+            self.getWristPosition().radians,
+            self.coralWristTarget.radians()
+        ) # this output will now be in volts
 
-        self.coralWristMotor.set(-coralAmount)
+        feedforward = self.coralWristFeedForeward.calculate(
+            wristPosition.radians(),
+            wpimath.units.rotationsPerMinuteToRadiansPerSecond(self.coralWristEncoder.getVelocity())
+        )
+
+        output = pidAmount + feedforward
+        
+        if abs(output) > 12.0:
+            if output > 0.0:
+                output = 12.0
+            else:
+                output = -12.0
+        
+        self.coralWristMotor.setVoltage(-output)
+
+    def setTargetAngle(self,targetAngleDegrees: float):
+        self.coralWristTarget = wpimath.geometry.Rotation2d.fromDegrees(targetAngleDegrees)
 
     def runIntakeEject(self) -> bool:
         if self.coralIntakeState == IntakeState.In:
