@@ -41,8 +41,10 @@ class IntakeConstants:
     CORAL_IN_CURRENT_THRESHOLD = 10
     CORAL_EJECT_CURENT_THRESHOLD = 2
 
+    CORAL_WRIST_STATIC_GAIN = 0.01
     CORAL_WRIST_GRAVITY_GAIN = 0.25 # initial guess
     CORAL_WRIST_VELOCITY_GAIN = 0.0
+    
     CORAL_WRIST_PROPORTIONAL_GAIN = 0.0
     CORAL_WRIST_INTEGRAL_GAIN = 0
     CORAL_WRIST_DERIVATIVE_GAIN = 0
@@ -95,7 +97,7 @@ class Intake:
         # self.cooldownTimer = wpilib.Timer()
 
         self.coralWristFeedForeward = wpimath.controller.ArmFeedforward(
-            0.0,
+            IntakeConstants.CORAL_WRIST_STATIC_GAIN,
             IntakeConstants.CORAL_WRIST_GRAVITY_GAIN,
             IntakeConstants.CORAL_WRIST_VELOCITY_GAIN
         )
