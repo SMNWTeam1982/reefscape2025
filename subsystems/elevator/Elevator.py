@@ -38,7 +38,7 @@ class ElevatorConstants:
     ELEVATOR_MAX_HEIGHT_METERS = 1.81
     ELEVATOR_MIN_HEIGHT_METERS = ELEVATOR_HEIGHT_OFFSET
     
-    ALTITUDE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(50)
+    ALTITUDE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25)
 
 class Elevator:
     def __init__(self, pdpReference: wpilib.PowerDistribution):
@@ -108,7 +108,9 @@ class Elevator:
         
     def logElevatorCurrents(self):
         SmartDashboard.putNumber("right elevator current", self.rightAltitudeMotor.getOutputCurrent())
+        SmartDashboard.putNumber("right elevator temperature", self.rightAltitudeMotor.getMotorTemperature())
         SmartDashboard.putNumber("left elevator current", self.leftAltitudeMotor.getOutputCurrent())
+        SmartDashboard.putNumber("left elevator temperature", self.leftAltitudeMotor.getMotorTemperature())
 
     def moveElevator(self): # run pid
         output = -self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)
@@ -125,7 +127,7 @@ class Elevator:
 
     def moveElevatorRaw(self,amount: float):
         self.leftAltitudeMotor.set(-amount)
-        self.rightAltitudeMotor.set(amount)
+        self.rightAltitudeMotor.set(0)
     
     def moveElevatorAndWrist(self):
         self.moveElevator()

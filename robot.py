@@ -68,38 +68,45 @@ class MyRobot(wpilib.TimedRobot):
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
-
-        if self.driveController.getAButton():
-            self.elevator.setL2()
-
-        if self.driveController.getXButton(): # run the wrist when pressing X
-            self.elevator.setL3Coral()
-
-        if self.driveController.getBButton():
-            #self.elevator.intake.runWrist()
-            self.elevator.runStateMachine()
+        
+        if self.driveController.getLeftBumper():
+            self.elevator.moveElevatorRaw(0.25)
+        elif self.driveController.getRightBumper():
+            self.elevator.moveElevatorRaw(-0.25)
         else:
             self.elevator.moveElevatorRaw(0.0)
-        if self.driveController.getYButton(): # zero wrist encoders
-            self.elevator.zer0AltitudeEncoders()
-            #self.elevator.intake.zeroEncoder()
-            #self.elevator.intake.coralWristMotor.set(0)
 
-        if self.driveController.getRightBumper():
-            #self.elevator.moveElevatorRaw(0.2)
-            #self.elevator.intake.coralMotor.set(0.6)
-            self.elevator.intake.objectOutTestingVariable = True
-            self.elevator.intake.objectInTestingVariable = False
-        elif self.driveController.getLeftBumper():
-            self.elevator.intake.objectOutTestingVariable = False
-            self.elevator.intake.objectInTestingVariable = True
-            #self.elevator.moveElevatorRaw(-0.2)
-            #self.elevator.intake.coralMotor.set(-0.2)
-        else:
-            #self.elevator.intake.coralMotor.set(0.0)
-            #self.elevator.moveElevatorRaw(0.0)
-            self.elevator.intake.objectOutTestingVariable = False
-            self.elevator.intake.objectInTestingVariable = False
+        # if self.driveController.getAButton():
+        #     self.elevator.setL2()
+
+        # if self.driveController.getXButton(): # run the wrist when pressing X
+        #     self.elevator.setL3Coral()
+
+        # if self.driveController.getBButton():
+        #     #self.elevator.intake.runWrist()
+        #     self.elevator.runStateMachine()
+        # else:
+        #     self.elevator.moveElevatorRaw(0.0)
+        # if self.driveController.getYButton(): # zero wrist encoders
+        #     self.elevator.zer0AltitudeEncoders()
+        #     #self.elevator.intake.zeroEncoder()
+        #     #self.elevator.intake.coralWristMotor.set(0)
+
+        # if self.driveController.getRightBumper():
+        #     #self.elevator.moveElevatorRaw(0.2)
+        #     #self.elevator.intake.coralMotor.set(0.6)
+        #     self.elevator.intake.objectOutTestingVariable = True
+        #     self.elevator.intake.objectInTestingVariable = False
+        # elif self.driveController.getLeftBumper():
+        #     self.elevator.intake.objectOutTestingVariable = False
+        #     self.elevator.intake.objectInTestingVariable = True
+        #     #self.elevator.moveElevatorRaw(-0.2)
+        #     #self.elevator.intake.coralMotor.set(-0.2)
+        # else:
+        #     #self.elevator.intake.coralMotor.set(0.0)
+        #     #self.elevator.moveElevatorRaw(0.0)
+        #     self.elevator.intake.objectOutTestingVariable = False
+        #     self.elevator.intake.objectInTestingVariable = False
 
         # returning early causes the code to not work, I commented everything else out instead
         #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
