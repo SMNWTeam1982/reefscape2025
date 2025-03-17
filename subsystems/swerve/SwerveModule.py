@@ -119,8 +119,9 @@ class Wheel:
 
         # Calculate the drive output from the drive PID controller. this will be added to the FF voltage
         driveOutput = self.drivePIDController.calculate(
-            self.driveEncoder.getVelocity(), desiredState.speed
-        ) # this is wrong - zach march 11
+            self.driveEncoder.getVelocity() * ModuleConstants.RPM_TO_METERS_PER_SECOND_CONVERSION_MULTIPLIER,
+            desiredState.speed
+        )
 
         driveFeedforward = self.driveFeedforward.calculate(desiredState.speed) # converts mps to volts
 
@@ -134,8 +135,7 @@ class Wheel:
         if turnOutput < -1.0:
             turnOutput = -1.0
 
-        self.driveMotor.setVoltage( (driveOutput + driveFeedforward) * 0.5 ) # Volts because of feedforward
-
+        self.driveMotor.setVoltage( driveOutput + driveFeedforward ) # Volts because of feedforward
         self.turningMotor.set(-turnOutput) # use percent for turning
 
     def updateTurnPID(self, p: float, i: float, d: float):

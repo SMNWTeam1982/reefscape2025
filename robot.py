@@ -41,6 +41,7 @@ class MyRobot(wpilib.TimedRobot):
         # set the controller below to the one desired for live pid tuning
 
         controller = self.elevator.altitudePIDController
+        
 
         if self.driveController.getPOV() == 0:
             p = controller.getP()
@@ -50,13 +51,14 @@ class MyRobot(wpilib.TimedRobot):
             SmartDashboard.putNumber("p",p)
             SmartDashboard.putNumber("i",i)
             SmartDashboard.putNumber("d",d)
+
         if self.driveController.getPOV() == 180:
             p = SmartDashboard.getNumber("p",0)
             i = SmartDashboard.getNumber("i",0)
             d = SmartDashboard.getNumber("d",0)
 
             controller.setPID(p,i,d)
-            
+        
         SmartDashboard.putNumber("p error", controller.getError())
         SmartDashboard.putNumber("i error", controller.getAccumulatedError())
         SmartDashboard.putNumber("d error", controller.getErrorDerivative())

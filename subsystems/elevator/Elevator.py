@@ -114,12 +114,11 @@ class Elevator:
 
     def moveElevator(self): # run pid
         output = -self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)
-        
-        if abs(output) > 1.0:
-            if output > 0.0:
-                output = 1.0
-            else:
-                output = -1.0
+
+        if output > 1.0:
+            output = 1.0
+        if output < -1.0:
+            output = -1.0
         
         # one will need to be negated, we dont know which one yet
         self.leftAltitudeMotor.set(-output)
@@ -127,7 +126,7 @@ class Elevator:
 
     def moveElevatorRaw(self,amount: float):
         self.leftAltitudeMotor.set(-amount)
-        self.rightAltitudeMotor.set(0)
+        self.rightAltitudeMotor.set(amount)
     
     def moveElevatorAndWrist(self):
         self.moveElevator()
