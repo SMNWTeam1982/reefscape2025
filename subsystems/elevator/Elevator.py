@@ -43,20 +43,21 @@ class ElevatorConstants:
 class Elevator:
     def __init__(self, pdpReference: wpilib.PowerDistribution):
         self.pdpReference = pdpReference
-        self.leftAltitudeMotor = rev.SparkMax(11,rev.SparkLowLevel.MotorType.kBrushless)
-        self.leftAltitudeEncoder = self.leftAltitudeMotor.getEncoder()
-        self.leftAltitudeMotor.configure(
+        self.leadMotor = rev.SparkMax(11,rev.SparkLowLevel.MotorType.kBrushless)
+        self.leadMotorEncoder = self.leadMotor.getEncoder()
+        self.leadMotor.configure(
             ElevatorConstants.ALTITUDE_MOTOR_CONFIG,
             rev.SparkBase.ResetMode.kResetSafeParameters,
             rev.SparkBase.PersistMode.kPersistParameters
         )
 
-        self.rightAltitudeMotor = rev.SparkMax(12,rev.SparkLowLevel.MotorType.kBrushless)
-        self.rightAltitudeEncoder = self.rightAltitudeMotor.getEncoder()
-        self.rightAltitudeMotor.configure(
-            ElevatorConstants.ALTITUDE_MOTOR_CONFIG,
+        self.followerMotor = rev.SparkMax(12,rev.SparkLowLevel.MotorType.kBrushless)
+        self.followerMotorEncoder = self.followerMotor.getEncoder()
+        self.followerMotor.fo
+        self.followerMotor.configure(
+            ElevatorConstants.ALTITUDE_MOTOR_CONFIG.follow(11, True),
             rev.SparkBase.ResetMode.kResetSafeParameters,
-            rev.SparkBase.PersistMode.kPersistParameters
+            rev.SparkBase.PersistMode.kPersistParameters,
         )
 
         self.altitudePIDController = wpimath.controller.PIDController(
@@ -74,43 +75,34 @@ class Elevator:
         self.activeStateMachine = self.idleStateMachine # this variable IS the function, this might not be the best way to do this
 
     def zer0AltitudeEncoders(self):
-        self.leftAltitudeEncoder.setPosition(0.0)
-        self.rightAltitudeEncoder.setPosition(0.0)
+        self.leadMotorEncoder.setPosition(0.0)
+        self.followerMotorEncoder.setPosition(0.0)
 
     def getElevatorHeight(self) -> wpimath.units.meters:
         # negate one
-        averagePosition = (self.leftAltitudeEncoder.getPosition() - self.rightAltitudeEncoder.getPosition()) / 2
+        averagePosition = self.leadMotorEncoder.getPosition()
 
         averagePosition *= ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER
 
         return averagePosition + ElevatorConstants.ELEVATOR_HEIGHT_OFFSET
     
     def LogRawElevatorHeights(self):
-        leftPos = self.leftAltitudeEncoder.getPosition()
-        rightPos = self.rightAltitudeEncoder.getPosition()
+        leadPos = self.leadMotorEncoder.getPosition()
 
-        SmartDashboard.putNumber("raw altitude encoder left",leftPos)
+        SmartDashboard.putNumber("raw altitude encoder lead motor",leadPos)
         SmartDashboard.putNumber(
-            "computed altitude encoder left",
-            leftPos * ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER + ElevatorConstants.ELEVATOR_HEIGHT_OFFSET
-        )
-        SmartDashboard.putNumber("raw altitude encoder right",rightPos)
-        SmartDashboard.putNumber(
-            "computed altitude encoder right",
-            -rightPos * ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER + ElevatorConstants.ELEVATOR_HEIGHT_OFFSET
-        )
-
-        SmartDashboard.putNumber("average raw altitude", (leftPos - rightPos) / 2)
-    
+            "computed altitude encoder lead motor",
+            leadPos * ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER + ElevatorConstants.ELEVATOR_HEIGHT_OFFSET
+        )    
     def logElevatorHeight(self):
         SmartDashboard.putNumber("elevator height",self.getElevatorHeight())
         SmartDashboard.putNumber("target height",self.targetHeight)
         
     def logElevatorCurrents(self):
-        SmartDashboard.putNumber("right elevator current", self.rightAltitudeMotor.getOutputCurrent())
-        SmartDashboard.putNumber("right elevator temperature", self.rightAltitudeMotor.getMotorTemperature())
-        SmartDashboard.putNumber("left elevator current", self.leftAltitudeMotor.getOutputCurrent())
-        SmartDashboard.putNumber("left elevator temperature", self.leftAltitudeMotor.getMotorTemperature())
+        SmartDashboard.putNumber("right elevator current", self.followerMotor.getOutputCurrent())
+        SmartDashboard.putNumber("right elevator temperature", self.followerMotor.getMotorTemperature())
+        SmartDashboard.putNumber("left elevator current", self.leadMotor.getOutputCurrent())
+        SmartDashboard.putNumber("left elevator temperature", self.leadMotor.getMotorTemperature())
 
     def moveElevator(self): # run pid
         output = -self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)
@@ -121,12 +113,10 @@ class Elevator:
             output = -1.0
         
         # one will need to be negated, we dont know which one yet
-        self.leftAltitudeMotor.set(-output)
-        self.rightAltitudeMotor.set(output)
+        self.leadMotor.set(-output)
 
     def moveElevatorRaw(self,amount: float):
-        self.leftAltitudeMotor.set(-amount)
-        self.rightAltitudeMotor.set(amount)
+        self.leadMotor.set(-amount)
     
     def moveElevatorAndWrist(self):
         self.moveElevator()

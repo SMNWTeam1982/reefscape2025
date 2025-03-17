@@ -157,13 +157,15 @@ class MyRobot(wpilib.TimedRobot):
         x = -self.driveController.getLeftX()
         y = self.driveController.getLeftY()
         turn = self.driveController.getRightX()
-
-        self.drive.drive(
-            self.deadzone(x),
-            self.deadzone(y),
-            self.deadzone(turn),
-            True
-        )
+        if self.driveController.getPOV() == 0:
+            self.drive.reefSlam()
+        else:
+            self.drive.drive(
+                self.deadzone(x),
+                self.deadzone(y),
+                self.deadzone(turn),
+                True
+            )
         # Commented out for elevator testing - Kay 3/5
         #if self.driveController.getXButton(): # set left pos
         #    targetPose = ReefNavigator.getNearestLeft(self.drive.getPose())

@@ -249,3 +249,7 @@ class Drivetrain:
         self.frontRight.updateDrivePID(p,i,d)
         self.backLeft.updateDrivePID(p,i,d)
         self.backRight.updateDrivePID(p,i,d)
+
+    def reefSlam(self):
+        self.drive(.2,0,0,False)
+        
