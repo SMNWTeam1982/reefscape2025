@@ -53,7 +53,6 @@ class Elevator:
 
         self.followerMotor = rev.SparkMax(12,rev.SparkLowLevel.MotorType.kBrushless)
         self.followerMotorEncoder = self.followerMotor.getEncoder()
-        self.followerMotor.fo
         self.followerMotor.configure(
             ElevatorConstants.ALTITUDE_MOTOR_CONFIG.follow(11, True),
             rev.SparkBase.ResetMode.kResetSafeParameters,
