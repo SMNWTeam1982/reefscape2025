@@ -38,7 +38,7 @@ class ElevatorConstants:
     ELEVATOR_MAX_HEIGHT_METERS = 1.81
     ELEVATOR_MIN_HEIGHT_METERS = ELEVATOR_HEIGHT_OFFSET
     
-    ALTITUDE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25)
+    ALTITUDE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25).setIdleMode(rev.SparkBaseConfig.IdleMode.kCoast)
 
 class Elevator:
     def __init__(self, pdpReference: wpilib.PowerDistribution):
@@ -53,7 +53,6 @@ class Elevator:
 
         self.followerMotor = rev.SparkMax(12,rev.SparkLowLevel.MotorType.kBrushless)
         self.followerMotorEncoder = self.followerMotor.getEncoder()
-        self.followerMotor.fo
         self.followerMotor.configure(
             ElevatorConstants.ALTITUDE_MOTOR_CONFIG.follow(11, True),
             rev.SparkBase.ResetMode.kResetSafeParameters,
@@ -79,12 +78,11 @@ class Elevator:
         self.followerMotorEncoder.setPosition(0.0)
 
     def getElevatorHeight(self) -> wpimath.units.meters:
-        # negate one
-        averagePosition = self.leadMotorEncoder.getPosition()
+        position = self.leadMotorEncoder.getPosition()
 
-        averagePosition *= ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER
+        position *= ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER
 
-        return averagePosition + ElevatorConstants.ELEVATOR_HEIGHT_OFFSET
+        return position + ElevatorConstants.ELEVATOR_HEIGHT_OFFSET
     
     def LogRawElevatorHeights(self):
         leadPos = self.leadMotorEncoder.getPosition()
@@ -103,9 +101,12 @@ class Elevator:
         SmartDashboard.putNumber("right elevator temperature", self.followerMotor.getMotorTemperature())
         SmartDashboard.putNumber("left elevator current", self.leadMotor.getOutputCurrent())
         SmartDashboard.putNumber("left elevator temperature", self.leadMotor.getMotorTemperature())
+        
+        SmartDashboard.putNumber("left speed",self.leadMotorEncoder.getVelocity())
+        SmartDashboard.putNumber("right speed",self.followerMotorEncoder.getVelocity())
 
     def moveElevator(self): # run pid
-        output = -self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)
+        output = self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)
 
         if output > 1.0:
             output = 1.0
@@ -113,7 +114,7 @@ class Elevator:
             output = -1.0
         
         # one will need to be negated, we dont know which one yet
-        self.leadMotor.set(-output)
+        self.leadMotor.set(output)
 
     def moveElevatorRaw(self,amount: float):
         self.leadMotor.set(-amount)

@@ -29,7 +29,7 @@ class IntakeConstants:
     CORAL_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(72)
     CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(50) # stow up
 
-    CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER = (1/3.666663) * -133 # march 8 2025
+    CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER = 72/-3.4524 # march 21 2025
     CORAL_POSITION_OFFSET = 72 # march something 2025
 
 
@@ -42,16 +42,16 @@ class IntakeConstants:
     CORAL_EJECT_CURENT_THRESHOLD = 2
 
     CORAL_WRIST_STATIC_GAIN = 0.01
-    CORAL_WRIST_GRAVITY_GAIN = 0.25 # initial guess
+    CORAL_WRIST_GRAVITY_GAIN = 0.6 # march 21 2025
     CORAL_WRIST_VELOCITY_GAIN = 0.0
     
-    CORAL_WRIST_PROPORTIONAL_GAIN = 0.0
+    CORAL_WRIST_PROPORTIONAL_GAIN = 10 # march 21 2025
     CORAL_WRIST_INTEGRAL_GAIN = 0
     CORAL_WRIST_DERIVATIVE_GAIN = 0
     
     CORAL_WRIST_OUTPUT_LIMIT = 0.4
 
-    WRIST_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(15)
+    WRIST_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25)
     INTAKE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25)
 
 
@@ -107,9 +107,9 @@ class Intake:
             IntakeConstants.CORAL_WRIST_INTEGRAL_GAIN,
             IntakeConstants.CORAL_WRIST_DERIVATIVE_GAIN
         )
-        
+
         self.coralWristController.enableContinuousInput(0,360)
-        
+
         self.coralWristController.setTolerance(1) # degree
         self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
 
@@ -119,8 +119,6 @@ class Intake:
 
         self.algaeIntakeState = IntakeState.Hold
         self.coralIntakeState = IntakeState.Hold
-
-
 
         self.objectInTestingVariable = False # variables for testing
         self.objectOutTestingVariable = True
@@ -195,10 +193,10 @@ class Intake:
         return False # todo
     
     def runWrist(self):
-        return # early return for testing the elevator state machine
+        #return # early return for testing the elevator state machine
         wristPosition = self.getWristPosition()
         pidAmount = self.coralWristController.calculate(
-            self.getWristPosition().radians,
+            self.getWristPosition().radians(),
             self.coralWristTarget.radians()
         ) # this output will now be in volts
 
@@ -219,6 +217,9 @@ class Intake:
 
     def setTargetAngle(self,targetAngleDegrees: float):
         self.coralWristTarget = wpimath.geometry.Rotation2d.fromDegrees(targetAngleDegrees)
+        
+    def runWristRaw(self,amount: float):
+        self.coralWristMotor.set(amount)
 
     def runIntakeEject(self):
         return # early return for testing the elevator state machine
