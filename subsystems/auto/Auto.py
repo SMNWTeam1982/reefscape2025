@@ -3,8 +3,7 @@ from pathplannerlib.path import PathPlannerPath, PathConstraints
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.config import RobotConfig, PIDConstants
 import wpimath
-from wpilib import DriverStation
-import wpimath.units
+from wpilib import DriverStation, SmartDashboard
 
 from ..swerve.Drive import Drivetrain, DriveConstants
 
@@ -24,11 +23,14 @@ class SwerveAuto:
             lambda: DriverStation.getAlliance() == DriverStation.Alliance.kRed,
             Subsystem() # give it a fake subsystem to satisfy the requirements
         )
-
+        self.autoChooser = AutoBuilder.buildAutoChooser()
         self.driveReference = driveReference
         self.pathCommand = None # no path command initially
         self.done = True
     
+        self.autoChooser = AutoBuilder.buildAutoChooser()
+        SmartDashboard.putData("Auto Chooser", self.autoChooser)
+
     def runAuto(self):
         if self.pathCommand.isFinished():
             if self.done == False:
@@ -51,3 +53,6 @@ class SwerveAuto:
             rotation_delay_distance=0.0
         )
         self.pathCommand.initialize()
+
+    def getAutoCommand(self):
+        return self.autoChooser.getSelected()
