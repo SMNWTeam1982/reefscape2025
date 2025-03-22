@@ -168,28 +168,32 @@ class Intake:
 
 
     def algaeAllTheWayIn(self) -> bool:
-        return self.objectInTestingVariable
+        return False
 
-        for current in self.previousAlgaeCurrents:
-            if current < IntakeConstants.ALGAE_IN_CURRENT_THRESHOLD:
-                return False
-        return True
+        #return self.objectInTestingVariable
+
+        # for current in self.previousAlgaeCurrents:
+        #     if current < IntakeConstants.ALGAE_IN_CURRENT_THRESHOLD:
+        #         return False
+        # return True
     
     def algaeAllTheWayOut(self) -> bool:
-        return self.objectOutTestingVariable
-        return False # todo
+        return False
+        # return self.objectOutTestingVariable
+        # return False # todo
     
 
     def coralAllTheWayIn(self) -> bool:
         return self.objectInTestingVariable
-        for current in self.previousCoralCurrents:
-            if current < IntakeConstants.CORAL_IN_CURRENT_THRESHOLD:
-                return False
-        return True
+
+        # for current in self.previousCoralCurrents:
+        #     if current < IntakeConstants.CORAL_IN_CURRENT_THRESHOLD:
+        #         return False
+        # return True
     
     def coralAllTheWayOut(self) -> bool:
         return self.objectOutTestingVariable
-        return False # todo
+        # return False # todo
     
     def runWrist(self):
         #return # early return for testing the elevator state machine
@@ -228,8 +232,6 @@ class Intake:
         #return # early return for testing the elevator state machine
         if self.coralIntakeState == IntakeState.In:
             self.coralMotor.set(-IntakeConstants.CORAL_INTAKE_SPEED)
-            # if self.coralAllTheWayIn(): state will be controlled from the elevator state machines
-            #     self.setIdle() 
         if self.coralIntakeState == IntakeState.Out:
             self.coralMotor.set(IntakeConstants.CORAL_EJECT_SPEED)
         if self.coralIntakeState == IntakeState.Hold:
@@ -237,15 +239,11 @@ class Intake:
 
         if self.algaeIntakeState == IntakeState.In:
             self.leftAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
-            #self.rightAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
-            # if self.algaeAllTheWayIn():
-            #     self.setIdle()
         if self.algaeIntakeState == IntakeState.Out:
             self.leftAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
-            #self.rightAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
         if self.algaeIntakeState == IntakeState.Hold:
             self.leftAlgaeMotor.set(0.0)
-            #self.rightAlgaeMotor.set(0.0)
+            
 
     # def suspendTask(self):
     #     self.cooldownTimer.stop()

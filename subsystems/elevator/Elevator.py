@@ -23,9 +23,9 @@ class ElevatorConstants:
 
     ALGAE_2_TARGET_HEIGHT = 1.2
 
-    PROCESSOR_TARGET_HEIGHT = 0.55
+    PROCESSOR_TARGET_HEIGHT = 0.6
 
-    INTAKING_TARGET_HEIGHT = 0.6
+    INTAKING_TARGET_HEIGHT = 0.7
 
     IDLE_TARGET_HEIGHT = 0.6
 
@@ -117,17 +117,26 @@ class Elevator:
         self.leadMotor.set(-amount)
     
     def moveElevatorAndWrist(self) -> bool:
+
+        self.intake.updateCurrentDrawHistory()
         
         self.moveElevator()
         
         if self.altitudePIDController.atSetpoint():
             self.intake.runWrist()
-            if self.intake.coralWristController.atSetpoint():
-                return True
         
+        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+            return True
+        else:
+            return False
+
+    def moveWristThenElevator(self):
         self.intake.updateCurrentDrawHistory()
         
-        return False
+        self.intake.runWrist()
+        
+        if self.intake.coralWristController.atSetpoint():
+            self.moveElevator()
         
 
     def runStateMachine(self):
@@ -138,42 +147,33 @@ class Elevator:
         self.intake.runWristRaw(0.0)
 
     def idleStateMachine(self):
-        self.moveElevatorAndWrist()
+        self.moveWristThenElevator()
+        self.intake.runIntakeEject()
 
     def coralScoreStateMachine(self):
         if self.moveElevatorAndWrist():
-            self.intake.runIntakeEject()
             if self.intake.coralAllTheWayOut():
                 self.setIdle()
-            
 
     def algaeIntakeStateMachine(self):
         if self.moveElevatorAndWrist():
-            self.intake.runIntakeEject()
             if self.intake.algaeAllTheWayIn():
                 self.setIdle()
 
-            
-
     def coralScoreAndAlgaeIntakeStateMachine(self): # for an L3 with an algae on it
         if self.moveElevatorAndWrist():
-            self.intake.runIntakeEject()
             if self.intake.coralAllTheWayOut():
                 self.setL3Algae()
     
     def coralIntakeStateMachine(self):
         if self.moveElevatorAndWrist():
-            self.intake.runIntakeEject()
             if self.intake.coralAllTheWayIn():
                 self.setIdle()
-            
 
     def algaeScoreStateMachine(self):
         if self.moveElevatorAndWrist():
-            self.intake.runIntakeEject()
             if self.intake.algaeAllTheWayOut():
                 self.setIdle()
-            
 
     
     def setL1(self):

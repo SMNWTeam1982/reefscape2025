@@ -107,18 +107,19 @@ class MyRobot(wpilib.TimedRobot):
         if self.driveController.getAButton():
             self.elevator.setL2()
 
-        if self.driveController.getXButton(): # run the wrist when pressing X
+        if self.driveController.getXButton():
             self.elevator.setL3Coral()
             
         if self.driveController.getBButton():
             self.elevator.setStation()
-            
-        
-            
+
         if self.driveController.getYButton():
             self.elevator.runStateMachine()
         else:
             self.elevator.stopMotors()
+
+        if self.driveController.getBackButton():
+            self.elevator.intake.runIntakeEject()
 
         # if self.driveController.getLeftBumper():
         # #     #self.elevator.intake.runWrist()
