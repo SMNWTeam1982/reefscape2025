@@ -48,8 +48,6 @@ class IntakeConstants:
     CORAL_WRIST_PROPORTIONAL_GAIN = 10 # march 21 2025
     CORAL_WRIST_INTEGRAL_GAIN = 0
     CORAL_WRIST_DERIVATIVE_GAIN = 0
-    
-    CORAL_WRIST_OUTPUT_LIMIT = 0.4
 
     WRIST_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25)
     INTAKE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25)
@@ -261,19 +259,12 @@ class Intake:
         SmartDashboard.putNumber("raw coralWristPosition", self.coralWristEncoder.getPosition())
         SmartDashboard.putNumber("target wrist position", self.coralWristTarget.degrees())
 
-    def logPIDErrors(self):
-        SmartDashboard.putNumber("wrist p error", self.coralWristController.getError())
-        SmartDashboard.putNumber("wrist i error", self.coralWristController.getAccumulatedError())
-        SmartDashboard.putNumber("wrist d error", self.coralWristController.getErrorDerivative())
-        
-    def logMotorStats(self):
+    def logWristSafety(self):
         SmartDashboard.putNumber("wrist current",self.coralWristMotor.getOutputCurrent())
         SmartDashboard.putNumber("wrist temperature",self.coralWristMotor.getMotorTemperature())
-        
-        
 
 
-    
+
     def setL1(self):
         self.coralWristTarget = IntakeConstants.LEVEL_1_CORAL_WRIST_POSITION
         self.algaeIntakeState = IntakeState.Hold

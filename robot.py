@@ -32,10 +32,10 @@ class MyRobot(wpilib.TimedRobot):
         #self.elevator.logElevatorHeight()
         #self.elevator.LogRawElevatorHeights()
         #self.elevator.logElevatorCurrents()
-        self.elevator.intake.logIntakeCurrents()
+        #self.elevator.intake.logIntakeCurrents()
         #self.climber.logClimberCurrents()
         self.elevator.intake.logWristPosition()
-        self.elevator.intake.logMotorStats()
+        self.elevator.intake.logWristSafety()
         #self.drive.logPoseEstimation()
         
         self.livePIDTuning()

@@ -86,12 +86,8 @@ class Elevator:
     
     def LogRawElevatorHeights(self):
         leadPos = self.leadMotorEncoder.getPosition()
-
         SmartDashboard.putNumber("raw altitude encoder lead motor",leadPos)
-        SmartDashboard.putNumber(
-            "computed altitude encoder lead motor",
-            leadPos * ElevatorConstants.MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER + ElevatorConstants.ELEVATOR_HEIGHT_OFFSET
-        )    
+        
     def logElevatorHeight(self):
         SmartDashboard.putNumber("elevator height",self.getElevatorHeight())
         SmartDashboard.putNumber("target height",self.targetHeight)
@@ -113,7 +109,6 @@ class Elevator:
         if output < -1.0:
             output = -1.0
         
-        # one will need to be negated, we dont know which one yet
         self.leadMotor.set(output)
 
     def moveElevatorRaw(self,amount: float):
