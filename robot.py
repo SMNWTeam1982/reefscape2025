@@ -29,13 +29,19 @@ class MyRobot(wpilib.TimedRobot):
         self.runningReefNavigation = False
 
     def robotPeriodic(self):
-        #self.elevator.logElevatorHeight()
-        #self.elevator.LogRawElevatorHeights()
-        #self.elevator.logElevatorCurrents()
-        #self.elevator.intake.logIntakeCurrents()
+        self.elevator.logElevatorHeight()
+        self.elevator.LogRawElevatorHeights()
+        self.elevator.logElevatorCurrents()
+        
+        
+        self.elevator.intake.logIntakeCurrents()
+        
+        
         #self.climber.logClimberCurrents()
+        
         self.elevator.intake.logWristPosition()
         self.elevator.intake.logWristSafety()
+        
         #self.drive.logPoseEstimation()
         
         self.livePIDTuning()
@@ -83,51 +89,66 @@ class MyRobot(wpilib.TimedRobot):
         pass
     def teleopPeriodic(self):
         
+        # if self.driveController.getAButton():
+        #     self.elevator.intake.runWrist()
+        # else:
+        #     self.elevator.intake.runWristRaw(0)
+            
+        # if self.driveController.getBButton():
+        #     self.elevator.intake.setTargetAngle(25)
+        
+        # if self.driveController.getXButton():
+        #     self.elevator.intake.setTargetAngle(-10)
+            
+        # if self.driveController.getYButton():
+        #     self.elevator.intake.setTargetAngle(50)
+        
+
         if self.driveController.getAButton():
-            self.elevator.intake.runWrist()
-        else:
-            self.elevator.intake.runWristRaw(0)
+            self.elevator.setL2()
+
+        if self.driveController.getXButton(): # run the wrist when pressing X
+            self.elevator.setL3Coral()
             
         if self.driveController.getBButton():
-            self.elevator.intake.setTargetAngle(25)
+            self.elevator.setStation()
+            
         
-        if self.driveController.getXButton():
-            self.elevator.intake.setTargetAngle(-10)
             
         if self.driveController.getYButton():
-            self.elevator.intake.setTargetAngle(50)
+            self.elevator.runStateMachine()
+        else:
+            self.elevator.stopMotors()
 
-        # if self.driveController.getAButton():
-        #     self.elevator.setL2()
-
-        # if self.driveController.getXButton(): # run the wrist when pressing X
-        #     self.elevator.setL3Coral()
-
-        # if self.driveController.getBButton():
-        #     #self.elevator.intake.runWrist()
+        # if self.driveController.getLeftBumper():
+        # #     #self.elevator.intake.runWrist()
         #     self.elevator.runStateMachine()
+        #     self.elevator.moveElevatorRaw(0.5)
+        # elif self.driveController.getRightBumper():
+        #     self.elevator.moveElevatorRaw(-0.5)
         # else:
         #     self.elevator.moveElevatorRaw(0.0)
+            
         # if self.driveController.getYButton(): # zero wrist encoders
         #     self.elevator.zer0AltitudeEncoders()
         #     #self.elevator.intake.zeroEncoder()
         #     #self.elevator.intake.coralWristMotor.set(0)
 
-        # if self.driveController.getRightBumper():
-        #     #self.elevator.moveElevatorRaw(0.2)
-        #     #self.elevator.intake.coralMotor.set(0.6)
-        #     self.elevator.intake.objectOutTestingVariable = True
-        #     self.elevator.intake.objectInTestingVariable = False
-        # elif self.driveController.getLeftBumper():
-        #     self.elevator.intake.objectOutTestingVariable = False
-        #     self.elevator.intake.objectInTestingVariable = True
-        #     #self.elevator.moveElevatorRaw(-0.2)
-        #     #self.elevator.intake.coralMotor.set(-0.2)
-        # else:
-        #     #self.elevator.intake.coralMotor.set(0.0)
-        #     #self.elevator.moveElevatorRaw(0.0)
-        #     self.elevator.intake.objectOutTestingVariable = False
-        #     self.elevator.intake.objectInTestingVariable = False
+        if self.driveController.getRightBumper():
+            #self.elevator.moveElevatorRaw(0.2)
+            #self.elevator.intake.coralMotor.set(0.6)
+            self.elevator.intake.objectOutTestingVariable = True
+            self.elevator.intake.objectInTestingVariable = False
+        elif self.driveController.getLeftBumper():
+            self.elevator.intake.objectOutTestingVariable = False
+            self.elevator.intake.objectInTestingVariable = True
+            #self.elevator.moveElevatorRaw(-0.2)
+            #self.elevator.intake.coralMotor.set(-0.2)
+        else:
+            #self.elevator.intake.coralMotor.set(0.0)
+            #self.elevator.moveElevatorRaw(0.0)
+            self.elevator.intake.objectOutTestingVariable = False
+            self.elevator.intake.objectInTestingVariable = False
 
         # returning early causes the code to not work, I commented everything else out instead
         #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
@@ -173,18 +194,18 @@ class MyRobot(wpilib.TimedRobot):
 
         # ---------- driver controls below this line --------------------------
 
-        # x = -self.driveController.getLeftX()
-        # y = self.driveController.getLeftY()
-        # turn = self.driveController.getRightX()
-        # if self.driveController.getPOV() == 0:
-        #     self.drive.reefSlam()
-        # else:
-        #     self.drive.drive(
-        #         self.deadzone(x/3),
-        #         self.deadzone(y/3),
-        #         self.deadzone(turn),
-        #         True
-        #     )
+        x = -self.driveController.getLeftX()
+        y = self.driveController.getLeftY()
+        turn = self.driveController.getRightX()
+        if self.driveController.getPOV() == 90:
+            self.drive.reefSlam()
+        else:
+            self.drive.drive(
+                self.deadzone(x/4),
+                self.deadzone(y/4),
+                self.deadzone(turn),
+                True
+            )
         # Commented out for elevator testing - Kay 3/5
         #if self.driveController.getXButton(): # set left pos
         #    targetPose = ReefNavigator.getNearestLeft(self.drive.getPose())

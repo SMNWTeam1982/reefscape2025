@@ -16,8 +16,8 @@ from wpilib import SmartDashboard
 from . import Intake
 
 class ElevatorConstants:
-    LEVEL_1_TARGET_HEIGHT = 0.56
-    LEVEL_2_TARGET_HEIGHT = 0.762
+    LEVEL_1_TARGET_HEIGHT = 0.61
+    LEVEL_2_TARGET_HEIGHT = 0.8
     LEVEL_3_TARGET_HEIGHT = 1.1684
     LEVEL_4_TARGET_HEIGHT = 1.8
 
@@ -27,14 +27,14 @@ class ElevatorConstants:
 
     INTAKING_TARGET_HEIGHT = 0.6
 
-    IDLE_TARGET_HEIGHT = 0.55
+    IDLE_TARGET_HEIGHT = 0.6
 
-    ALTITUDE_PROPORTIONAL_GAIN = 3
+    ALTITUDE_PROPORTIONAL_GAIN = 10
     ALTITUDE_INTEGRAL_GAIN = 0.0
     ALTITUDE_DERIVATIVE_GAIN = 0.0
 
-    MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER = ((1/118.715)*128) / 100 # march 7 2025
-    ELEVATOR_HEIGHT_OFFSET = 0.53
+    MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER = 1.24744 / 462.3308 # march 22 2025
+    ELEVATOR_HEIGHT_OFFSET = 0.56256
     ELEVATOR_MAX_HEIGHT_METERS = 1.81
     ELEVATOR_MIN_HEIGHT_METERS = ELEVATOR_HEIGHT_OFFSET
     
@@ -64,6 +64,8 @@ class Elevator:
             ElevatorConstants.ALTITUDE_INTEGRAL_GAIN,
             ElevatorConstants.ALTITUDE_DERIVATIVE_GAIN
         )
+        
+        self.altitudePIDController.setTolerance(0.1)
 
         self.zer0AltitudeEncoders()
 
@@ -75,7 +77,7 @@ class Elevator:
 
     def zer0AltitudeEncoders(self):
         self.leadMotorEncoder.setPosition(0.0)
-        self.followerMotorEncoder.setPosition(0.0)
+        #self.followerMotorEncoder.setPosition(0.0)
 
     def getElevatorHeight(self) -> wpimath.units.meters:
         position = self.leadMotorEncoder.getPosition()
@@ -114,51 +116,64 @@ class Elevator:
     def moveElevatorRaw(self,amount: float):
         self.leadMotor.set(-amount)
     
-    def moveElevatorAndWrist(self):
+    def moveElevatorAndWrist(self) -> bool:
+        
         self.moveElevator()
-        self.intake.runWrist()
+        
+        if self.altitudePIDController.atSetpoint():
+            self.intake.runWrist()
+            if self.intake.coralWristController.atSetpoint():
+                return True
+        
         self.intake.updateCurrentDrawHistory()
+        
+        return False
+        
 
     def runStateMachine(self):
         self.activeStateMachine()
+        
+    def stopMotors(self):
+        self.moveElevatorRaw(0.0)
+        self.intake.runWristRaw(0.0)
 
     def idleStateMachine(self):
         self.moveElevatorAndWrist()
 
     def coralScoreStateMachine(self):
-        self.moveElevatorAndWrist()
-        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+        if self.moveElevatorAndWrist():
             self.intake.runIntakeEject()
             if self.intake.coralAllTheWayOut():
                 self.setIdle()
+            
 
     def algaeIntakeStateMachine(self):
-        self.moveElevatorAndWrist()
-        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+        if self.moveElevatorAndWrist():
             self.intake.runIntakeEject()
             if self.intake.algaeAllTheWayIn():
                 self.setIdle()
 
+            
+
     def coralScoreAndAlgaeIntakeStateMachine(self): # for an L3 with an algae on it
-        self.moveElevatorAndWrist()
-        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+        if self.moveElevatorAndWrist():
             self.intake.runIntakeEject()
             if self.intake.coralAllTheWayOut():
-                self.setL3Algae() # after coral done set to algae intake mode
+                self.setL3Algae()
     
     def coralIntakeStateMachine(self):
-        self.moveElevatorAndWrist()
-        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+        if self.moveElevatorAndWrist():
             self.intake.runIntakeEject()
             if self.intake.coralAllTheWayIn():
                 self.setIdle()
+            
 
     def algaeScoreStateMachine(self):
-        self.moveElevatorAndWrist()
-        if self.altitudePIDController.atSetpoint() and self.intake.coralWristController.atSetpoint():
+        if self.moveElevatorAndWrist():
             self.intake.runIntakeEject()
             if self.intake.algaeAllTheWayOut():
                 self.setIdle()
+            
 
     
     def setL1(self):
