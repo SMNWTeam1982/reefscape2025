@@ -49,6 +49,14 @@ class IntakeConstants:
     CORAL_WRIST_INTEGRAL_GAIN = 0.1
     CORAL_WRIST_DERIVATIVE_GAIN = 0.2
 
+    CORAL_WRIST_MAX_VELOCITY_RADIANS_PER_SECOND = math.pi / 8
+    CORAL_WRIST_MAX_ACCELERATION_RADIANS_PER_SECOND_SQUARED = math.pi
+
+    CORAL_WRIST_CONSTRAINTS = wpimath.trajectory.TrapezoidProfile.Constraints(
+        CORAL_WRIST_MAX_VELOCITY_RADIANS_PER_SECOND,
+        CORAL_WRIST_MAX_ACCELERATION_RADIANS_PER_SECOND_SQUARED
+    )
+
     WRIST_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(27)
     INTAKE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25)
 
@@ -101,15 +109,19 @@ class Intake:
             IntakeConstants.CORAL_WRIST_VELOCITY_GAIN
         )
 
-        self.coralWristController = wpimath.controller.PIDController(
+        self.coralWristController = wpimath.controller.ProfiledPIDController( # uses radians
             IntakeConstants.CORAL_WRIST_PROPORTIONAL_GAIN,
             IntakeConstants.CORAL_WRIST_INTEGRAL_GAIN,
-            IntakeConstants.CORAL_WRIST_DERIVATIVE_GAIN
+            IntakeConstants.CORAL_WRIST_DERIVATIVE_GAIN,
+            IntakeConstants.CORAL_WRIST_CONSTRAINTS
         )
 
         self.coralWristController.enableContinuousInput(0,360)
 
-        self.coralWristController.setTolerance(3) # degree
+        self.coralWristController.setTolerance(0.1) # radians
+
+        self.coralWristController.reset(self.getWristPosition().radians())
+
         self.coralWristTarget = IntakeConstants.CORAL_WRIST_STOW_POSITION
 
         # these are to record algae currents to know if we have been above threshold for 0.1 seconds (0.02s per cycle * 5 cycles)
