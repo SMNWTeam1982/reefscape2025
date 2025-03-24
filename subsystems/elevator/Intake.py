@@ -244,16 +244,20 @@ class Intake:
         #return # early return for testing the elevator state machine
         if self.coralIntakeState == IntakeState.In:
             self.coralMotor.set(-IntakeConstants.CORAL_INTAKE_SPEED)
-        if self.coralIntakeState == IntakeState.Out:
+        elif self.coralIntakeState == IntakeState.Out:
             self.coralMotor.set(IntakeConstants.CORAL_EJECT_SPEED)
-        if self.coralIntakeState == IntakeState.Hold:
+        elif self.coralIntakeState == IntakeState.Hold:
+            self.coralMotor.set(0.0)
+        else:
             self.coralMotor.set(0.0)
 
         if self.algaeIntakeState == IntakeState.In:
             self.leftAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
-        if self.algaeIntakeState == IntakeState.Out:
+        elif self.algaeIntakeState == IntakeState.Out:
             self.leftAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
-        if self.algaeIntakeState == IntakeState.Hold:
+        elif self.algaeIntakeState == IntakeState.Hold:
+            self.leftAlgaeMotor.set(0.0)
+        else:
             self.leftAlgaeMotor.set(0.0)
             
 

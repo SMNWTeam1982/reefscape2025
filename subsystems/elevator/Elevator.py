@@ -103,6 +103,11 @@ class Elevator:
         SmartDashboard.putNumber("left speed",self.leadMotorEncoder.getVelocity())
         SmartDashboard.putNumber("right speed",self.followerMotorEncoder.getVelocity())
 
+    def logStateMachineState(self):
+        SmartDashboard.putString("current elevator state", self.activeStateMachine.__name__)
+        SmartDashboard.putString("current coral intake state", self.intake.coralIntakeState.name)
+        SmartDashboard.putString("current algae intake state", self.intake.algaeIntakeState.name)
+
     def moveElevator(self): # run pid
         output = self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)
 
