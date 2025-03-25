@@ -5,6 +5,7 @@ import wpimath
 from subsystems.swerve import Drive
 from subsystems.auto import Auto, ReefNavigator
 from subsystems.elevator import Elevator
+from subsystems.elevator import Intake
 from subsystems.climber import Climber
 from wpilib import SmartDashboard
 # from photonlibpy.photonPoseEstimator import PoseStrategy
@@ -33,16 +34,16 @@ class MyRobot(wpilib.TimedRobot):
         self.elevator.LogRawElevatorHeights()
         self.elevator.logElevatorCurrents()
         
-        
         self.elevator.intake.logIntakeCurrents()
         
+        self.elevator.logStateMachineState()
         
-        #self.climber.logClimberCurrents()
+        self.climber.logClimberCurrents()
         
         self.elevator.intake.logWristPosition()
         self.elevator.intake.logWristSafety()
         
-        #self.drive.logPoseEstimation()
+        self.drive.logPoseEstimation()
         
         self.livePIDTuning()
 
@@ -77,9 +78,9 @@ class MyRobot(wpilib.TimedRobot):
             
             feedforwardController.setKg(g)
         
-        SmartDashboard.putNumber("p error", pidController.getError())
+        SmartDashboard.putNumber("p error", pidController.getPositionError())
         SmartDashboard.putNumber("i error", pidController.getAccumulatedError())
-        SmartDashboard.putNumber("d error", pidController.getErrorDerivative())
+        SmartDashboard.putNumber("d error", pidController.getVelocityError())
     def autonomousInit(self):
         pass
     def autonomousPeriodic(self):
@@ -104,22 +105,41 @@ class MyRobot(wpilib.TimedRobot):
         #     self.elevator.intake.setTargetAngle(50)
         
 
-        if self.driveController.getAButton():
-            self.elevator.setL2()
+        if self.operatorController.getAButton():
+            self.elevator.setIdle()
 
-        if self.driveController.getXButton():
+        if self.operatorController.getXButton():
             self.elevator.setL3Coral()
+        
+        if self.operatorController.getBackButton():
+            self.elevator.setL2()
             
-        if self.driveController.getBButton():
+        if self.operatorController.getStartButton():
+            self.elevator.setL1()
+            
+        if self.operatorController.getBButton():
             self.elevator.setStation()
+        
+        if self.operatorController.getYButton():
+            self.elevator.setL4()
 
-        if self.driveController.getYButton():
-            self.elevator.runStateMachine()
+        if self.operatorController.getRightBumper():
+            self.elevator.setHighAlgae()
+        if self.operatorController.getLeftBumper():
+            self.elevator.setL3Algae()
+            
+        self.elevator.runStateMachine()
+        
+        if self.driveController.getRightBumper():
+            self.climber.runClimberRaw(0.5)
+        elif self.driveController.getLeftBumper():
+            self.climber.runClimberRaw(-0.5)
         else:
-            self.elevator.stopMotors()
-
-        if self.driveController.getBackButton():
-            self.elevator.intake.runIntakeEject()
+            self.climber.runClimberRaw(0.0)
+            
+        
+        #self.elevator.intake.runIntakeEject()
+            
 
         # if self.driveController.getLeftBumper():
         # #     #self.elevator.intake.runWrist()
@@ -135,21 +155,21 @@ class MyRobot(wpilib.TimedRobot):
         #     #self.elevator.intake.zeroEncoder()
         #     #self.elevator.intake.coralWristMotor.set(0)
 
-        if self.driveController.getRightBumper():
-            #self.elevator.moveElevatorRaw(0.2)
-            #self.elevator.intake.coralMotor.set(0.6)
-            self.elevator.intake.objectOutTestingVariable = True
-            self.elevator.intake.objectInTestingVariable = False
-        elif self.driveController.getLeftBumper():
-            self.elevator.intake.objectOutTestingVariable = False
-            self.elevator.intake.objectInTestingVariable = True
-            #self.elevator.moveElevatorRaw(-0.2)
-            #self.elevator.intake.coralMotor.set(-0.2)
+        if self.operatorController.getLeftY() > 0.5:
+            self.elevator.intake.coralMotor.set(-0.3)
+            self.elevator.intake.leftAlgaeMotor.set(0.0)
+        elif self.operatorController.getLeftY() < -0.5:
+            self.elevator.intake.coralMotor.set(0.6)
+            self.elevator.intake.leftAlgaeMotor.set(0.5)
         else:
-            #self.elevator.intake.coralMotor.set(0.0)
-            #self.elevator.moveElevatorRaw(0.0)
-            self.elevator.intake.objectOutTestingVariable = False
-            self.elevator.intake.objectInTestingVariable = False
+            self.elevator.intake.coralMotor.set(0.0)
+            self.elevator.intake.leftAlgaeMotor.set(0.0)
+            
+        if self.operatorController.getRightY() > 0.5:
+            self.elevator.targetHeight += 0.01
+        elif self.operatorController.getRightY() < -0.5:
+            self.elevator.targetHeight -= 0.01
+        
 
         # returning early causes the code to not work, I commented everything else out instead
         #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
@@ -194,6 +214,11 @@ class MyRobot(wpilib.TimedRobot):
         #         return # dont let the driver have control while nav is runnig
 
         # ---------- driver controls below this line --------------------------
+        
+        self.drive.updatePoseEstimation()
+        
+        if self.driveController.getStartButton():
+            self.drive.poseEstimator.addVisionMeasurement()
 
         x = -self.driveController.getLeftX()
         y = self.driveController.getLeftY()
@@ -202,9 +227,9 @@ class MyRobot(wpilib.TimedRobot):
             self.drive.reefSlam()
         else:
             self.drive.drive(
-                self.deadzone(x/4),
-                self.deadzone(y/4),
-                self.deadzone(turn),
+                self.deadzone(x/2),
+                self.deadzone(y/2),
+                self.deadzone(turn * 3),
                 True
             )
         # Commented out for elevator testing - Kay 3/5

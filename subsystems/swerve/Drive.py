@@ -33,10 +33,10 @@ class DriveConstants:
     BACK_RIGHT_LOCATION = wpimath.geometry.Translation2d(-0.2635, -0.2635)
 
     CAMERA_POSITION_RELATIVE_TO_ROBOT = wpimath.geometry.Transform3d(
-        wpimath.units.inchesToMeters(15.0),
+        wpimath.units.inchesToMeters(12.0),
         0.0,
-        wpimath.units.inchesToMeters(5.0),
-        wpimath.geometry.Rotation3d.fromDegrees(0.0,11.0,3.5)
+        wpimath.units.inchesToMeters(9.75),
+        wpimath.geometry.Rotation3d.fromDegrees(0.0,10.0,0)
     )
 
 class Drivetrain:
@@ -196,7 +196,12 @@ class Drivetrain:
         return self.poseEstimator.getEstimatedPosition() # we will get the robot pose from vision
     
     def logPoseEstimation(self):
-        self.field.setRobotPose(self.getPose())
+        pose = self.getPose()
+        self.field.setRobotPose(pose)
+        SmartDashboard.putNumber("robot x",pose.X())
+        SmartDashboard.putNumber("robot y",pose.Y())
+        SmartDashboard.putNumber("robot rotation",pose.rotation().radians())
+        SmartDashboard.putNumberArray("robot pose data",[pose.X(),pose.Y(),pose.rotation().radians()])
     
     def resetPose(self,pose: wpimath.geometry.Pose2d):
         self.poseEstimator.resetPosition(

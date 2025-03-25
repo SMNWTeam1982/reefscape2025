@@ -18,14 +18,14 @@ from . import Intake
 class ElevatorConstants:
     LEVEL_1_TARGET_HEIGHT = 0.61
     LEVEL_2_TARGET_HEIGHT = 0.8
-    LEVEL_3_TARGET_HEIGHT = 1.1684
+    LEVEL_3_TARGET_HEIGHT = 1.22
     LEVEL_4_TARGET_HEIGHT = 1.8
 
     ALGAE_2_TARGET_HEIGHT = 1.2
 
     PROCESSOR_TARGET_HEIGHT = 0.6
 
-    INTAKING_TARGET_HEIGHT = 0.7
+    INTAKING_TARGET_HEIGHT = 0.8
 
     IDLE_TARGET_HEIGHT = 0.6
 
@@ -39,6 +39,7 @@ class ElevatorConstants:
     ELEVATOR_MIN_HEIGHT_METERS = ELEVATOR_HEIGHT_OFFSET
     
     ALTITUDE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25).setIdleMode(rev.SparkBaseConfig.IdleMode.kCoast)
+    
 
 class Elevator:
     def __init__(self, pdpReference: wpilib.PowerDistribution):
@@ -74,6 +75,8 @@ class Elevator:
         self.targetHeight = ElevatorConstants.IDLE_TARGET_HEIGHT
 
         self.activeStateMachine = self.idleStateMachine # this variable IS the function, this might not be the best way to do this
+        self.setIdle()
+        self.stopMotors()
 
     def zer0AltitudeEncoders(self):
         self.leadMotorEncoder.setPosition(0.0)
@@ -145,11 +148,14 @@ class Elevator:
         
 
     def runStateMachine(self):
-        self.activeStateMachine()
+        self.moveElevator()
+        self.intake.runWrist()
         
     def stopMotors(self):
         self.moveElevatorRaw(0.0)
         self.intake.runWristRaw(0.0)
+        self.intake.coralMotor.set(0.0)
+        self.intake.leftAlgaeMotor.set(0.0)
 
     def idleStateMachine(self):
         self.moveWristThenElevator()

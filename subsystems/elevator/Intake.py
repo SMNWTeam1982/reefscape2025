@@ -23,11 +23,11 @@ class IntakeConstants:
 
     LEVEL_1_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
     LEVEL_MID_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-15)
-    LEVEL_4_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(-10)
+    LEVEL_4_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(0)
     INTAKE_CORAL_WRIST_POSITION = wpimath.geometry.Rotation2d.fromDegrees(35)
 
     CORAL_WRIST_STARTING_POSITION = wpimath.geometry.Rotation2d.fromDegrees(72)
-    CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(50) # stow up
+    CORAL_WRIST_STOW_POSITION = wpimath.geometry.Rotation2d.fromDegrees(60) # stow up
 
     CORAL_ENCODER_ROTATIONS_TO_DEGREES_MULTIPLIER = 72/-5.2857 # march 22 2025
     CORAL_POSITION_OFFSET = 72 # march something 2025
@@ -49,7 +49,7 @@ class IntakeConstants:
     CORAL_WRIST_INTEGRAL_GAIN = 0.1
     CORAL_WRIST_DERIVATIVE_GAIN = 0.2
 
-    CORAL_WRIST_MAX_VELOCITY_RADIANS_PER_SECOND = math.pi / 8
+    CORAL_WRIST_MAX_VELOCITY_RADIANS_PER_SECOND = math.pi / 4
     CORAL_WRIST_MAX_ACCELERATION_RADIANS_PER_SECOND_SQUARED = math.pi
 
     CORAL_WRIST_CONSTRAINTS = wpimath.trajectory.TrapezoidProfile.Constraints(
@@ -133,6 +133,8 @@ class Intake:
 
         self.objectInTestingVariable = False # variables for testing
         self.objectOutTestingVariable = True
+        
+        self.setIdle()
 
 
     
@@ -236,29 +238,28 @@ class Intake:
     def runWristRaw(self,amount: float):
         self.coralWristMotor.set(amount)
     
-    def runAlgaeRaw(self,amount: float):
-        self.leftAlgaeMotor.set(amount)
-        # self.rightAlgaeMotor.set(-amount)
+    # def runAlgaeRaw(self,amount: float):
+    #     self.leftAlgaeMotor.set(amount)
+    #     # self.rightAlgaeMotor.set(-amount)
 
-    def runIntakeEject(self):
-        #return # early return for testing the elevator state machine
-        if self.coralIntakeState == IntakeState.In:
-            self.coralMotor.set(-IntakeConstants.CORAL_INTAKE_SPEED)
-        elif self.coralIntakeState == IntakeState.Out:
-            self.coralMotor.set(IntakeConstants.CORAL_EJECT_SPEED)
-        elif self.coralIntakeState == IntakeState.Hold:
-            self.coralMotor.set(0.0)
-        else:
-            self.coralMotor.set(0.0)
+    # def runIntakeEject(self):
+    #     if self.coralIntakeState.name == IntakeState.In.name:
+    #         self.coralMotor.set(-IntakeConstants.CORAL_INTAKE_SPEED)
+    #     elif self.coralIntakeState.name == IntakeState.Out.name:
+    #         self.coralMotor.set(IntakeConstants.CORAL_EJECT_SPEED)
+    #     elif self.coralIntakeState.name == IntakeState.Hold.name:
+    #         self.coralMotor.set(0.0)
+    #     else:
+    #         self.coralMotor.set(0.0)
 
-        if self.algaeIntakeState == IntakeState.In:
-            self.leftAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
-        elif self.algaeIntakeState == IntakeState.Out:
-            self.leftAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
-        elif self.algaeIntakeState == IntakeState.Hold:
-            self.leftAlgaeMotor.set(0.0)
-        else:
-            self.leftAlgaeMotor.set(0.0)
+    #     if self.algaeIntakeState.name == IntakeState.In.name:
+    #         self.leftAlgaeMotor.set(-IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
+    #     elif self.algaeIntakeState.name == IntakeState.Out.name:
+    #         self.leftAlgaeMotor.set(IntakeConstants.ALGAE_INTAKE_MAX_SPEED)
+    #     elif self.algaeIntakeState.name == IntakeState.Hold.name:
+    #         self.leftAlgaeMotor.set(0.0)
+    #     else:
+    #         self.leftAlgaeMotor.set(0.0)
             
 
     # def suspendTask(self):
