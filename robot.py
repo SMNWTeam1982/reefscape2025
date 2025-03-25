@@ -27,9 +27,14 @@ class MyRobot(wpilib.TimedRobot):
         self.climberTimer = wpilib.Timer()
 
         self.auto = Auto.SwerveAuto(self.drive)
+        self.nav = ReefNavigator.Navigator(self.drive)
+        
         self.runningReefNavigation = False
 
     def robotPeriodic(self):
+        self.drive.updatePoseEstimation()
+        
+        
         self.elevator.logElevatorHeight()
         self.elevator.LogRawElevatorHeights()
         self.elevator.logElevatorCurrents()
@@ -45,13 +50,13 @@ class MyRobot(wpilib.TimedRobot):
         
         self.drive.logPoseEstimation()
         
-        self.livePIDTuning()
+        #self.livePIDTuning()
 
 
     def livePIDTuning(self):
         # set the controller below to the one desired for live pid tuning
 
-        pidController = self.elevator.intake.coralWristController
+        pidController = self.nav.distancePID
         feedforwardController = self.elevator.intake.coralWristFeedForeward
 
         if self.driveController.getPOV() == 0:
@@ -89,8 +94,6 @@ class MyRobot(wpilib.TimedRobot):
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
-
-        self.drive.updatePoseEstimation()
         self.elevator.runStateMachine()
 
     
@@ -146,10 +149,13 @@ class MyRobot(wpilib.TimedRobot):
         #         return # dont let the driver have control while nav is runnig
 
         # ---------- driver controls below this line --------------------------
-
-        if self.driveController.getAButton():
-            self.drive.alignGyroWithField()
-            return None
+        
+        if self.driveController.getXButton():
+            self.nav.travel(ReefNavigator.getNearestLeft(self.drive.getPose()))
+            return
+        elif self.driveController.getBButton():
+            self.nav.travel(ReefNavigator.getNearestRight(self.drive.getPose()))
+            return
         
         
 
@@ -164,14 +170,14 @@ class MyRobot(wpilib.TimedRobot):
         elif pov == 180:
             self.drive.drive(-0.5, 0.0, 0.0, False)
         else:
-            x = -self.driveController.getLeftX()
-            y = self.driveController.getLeftY()
+            x = -self.driveController.getLeftY()
+            y = -self.driveController.getLeftX()
             turn = self.driveController.getRightX()
 
             self.drive.drive(
-                self.deadzone(x) * x * x * 3, # has to be cubed or it will always be positive
-                self.deadzone(y) * y * y * 3, # change the response curve so values close to zero are closer to zero
-                self.deadzone(turn) * 2,
+                self.deadzone(x), 
+                self.deadzone(y),
+                self.deadzone(turn) * 3,
                 True
             )
 
@@ -181,9 +187,6 @@ class MyRobot(wpilib.TimedRobot):
             self.climber.runClimberRaw(-0.5)
         else:
             self.climber.runClimberRaw(0.0)
-
-        if self.driveController.getAButton():
-            self.drive.alignGyroWithField()
                 
         
         # Commented out for elevator testing - Kay 3/5

@@ -192,17 +192,6 @@ class Drivetrain:
         self.field.setRobotPose(self.poseEstimator.getEstimatedPosition())
         SmartDashboard.putBoolean("target aquired",camResult.hasTargets())
 
-    def alignGyroWithField(self) -> bool:
-        camResult = self.cam.getLatestResult()
-        result = self.photonVisionPoseEstimator.update(camResult)
-        if result:
-            rotation = result.estimatedPose.toPose2d().rotation()
-            self.gyro.set_yaw(rotation.degrees())
-            return True
-        
-        return False
-        
-
     def getPose(self) -> wpimath.geometry.Pose2d:
         return self.poseEstimator.getEstimatedPosition() # we will get the robot pose from vision
     

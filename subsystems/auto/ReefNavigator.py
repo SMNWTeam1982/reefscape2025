@@ -25,14 +25,11 @@ def generateBranchReefSetpoint(idOfTagOnFace: int, rightBranch: bool) -> wpimath
         verticalShift += 6.5
     
     westRightTranslation = wpimath.geometry.Translation2d( # based off of tag 18 on the west facing side of the blue reef
-        wpimath.units.inchesToMeters(-18), # shift away 18 in
+        wpimath.units.inchesToMeters(-20), # shift away 18 in
         wpimath.units.inchesToMeters(verticalShift),
     )
 
-    newTranslation = wpimath.geometry.Translation2d(
-        westRightTranslation.norm(),
-        westRightTranslation.angle() + tagPose.rotation() # rotate the shift by the tags rotation
-    )
+    newTranslation = westRightTranslation.rotateBy(tagPose.rotation())
 
     return tagPose.transformBy( # tranform the tag pose to be a reef setpoint
     	wpimath.geometry.Transform2d(
@@ -109,7 +106,7 @@ def getNearestRight(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2
 class Navigator:
     def __init__(self,driveReference: Drivetrain):
         self.distancePID = wpimath.controller.ProfiledPIDController(
-            1.0,
+            0.5,
             0.0,
             0.0,
             wpimath.trajectory.TrapezoidProfile.Constraints(
@@ -121,7 +118,7 @@ class Navigator:
         self.distancePID.reset(0.0,0.0)
 
         self.rotationPID = wpimath.controller.ProfiledPIDController(
-            1.0,
+            0.2,
             0.0,
             0.0,
             wpimath.trajectory.TrapezoidProfile.Constraints(
@@ -143,6 +140,8 @@ class Navigator:
 
     def travel(self, targetPose: wpimath.geometry.Pose2d): # travels in a straight line to the target
         currentRobotPose = self.driveReference.getPose()
+        
+        wpilib.SmartDashboard.putNumberArray("target Pose", [targetPose.X(),targetPose.Y(),targetPose.rotation().radians()])
 
         distanceError = currentRobotPose.translation().distance(targetPose.translation())
         travelDirectionFieldRelative = (targetPose.translation() - currentRobotPose.translation()).angle()
@@ -153,8 +152,8 @@ class Navigator:
         )
 
         self.driveReference.drive(
-            travelVector.X(),
-            travelVector.Y(),
+            -travelVector.X(),
+            -travelVector.Y(),
             self.rotationPID.calculate(
                 currentRobotPose.rotation().radians(),
                 targetPose.rotation().radians()
