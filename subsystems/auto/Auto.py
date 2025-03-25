@@ -1,4 +1,5 @@
 import wpimath.controller
+import wpimath.geometry
 import wpimath.trajectory
 from pathplannerlib.auto import AutoBuilder, PathPlannerAuto
 from pathplannerlib.path import PathPlannerPath, PathConstraints
@@ -6,6 +7,8 @@ from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.config import RobotConfig, PIDConstants
 import wpimath
 from wpilib import DriverStation, SmartDashboard
+
+import math
 
 from ..swerve.Drive import Drivetrain, DriveConstants
 
@@ -58,43 +61,6 @@ class SwerveAuto:
 
     def getAutoCommand(self):
         return self.autoChooser.getSelected()
-    
-class BackupAuto:
-    def __init__(self,driveReference: Drivetrain):
-        self.distancePID = wpimath.controller.ProfiledPIDController(
-            1.0,
-            0.0,
-            0.0,
-            wpimath.trajectory.TrapezoidProfile.Constraints(
-                0.5, # meters
-                1.0
-            )
-        )
-
-        self.rotationPID = wpimath.controller.ProfiledPIDController(
-            1.0,
-            0.0,
-            0.0,
-            wpimath.trajectory.TrapezoidProfile.Constraints(
-                1.0, # radians
-                1.0
-            )
-        )
-
-        self.driveReference = driveReference
-        self.targetPose = driveReference.getPose() # set initial target to current position
-
-    def runAuto(self):
-        currentRobotPose = self.driveReference.getPose()
-
-        distanceError = currentRobotPose.translation().distance(self.targetPose.translation())
-        travelDirectionFieldRelative = (self.targetPose.translation() - currentRobotPose.translation()).angle()
-
-        rotationError = self.targetPose.rotation() - currentRobotPose.rotation()
-
-        rotationError = wpimath.angleModulus(rotationError.radians())
-
-        
 
 
 

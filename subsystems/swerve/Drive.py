@@ -82,8 +82,8 @@ class Drivetrain:
             ),
             wpimath.geometry.Pose2d(),
             # closer to 0 is more trust
-            (0.1, 0.1, 0.1), # trust swerve module data slightly less, except for gyro
-            (0.09, 0.09, 1) # trust vision data slightly more
+            (1.0, 1.0, 0.1), # trust swerve module data slightly less, except for gyro
+            (0.1, 0.1, 10) # trust vision data slightly more
         )
 
         self.field = Field2d()
@@ -121,7 +121,7 @@ class Drivetrain:
         speedsToDiscretize = None
         if fieldRelative:
             speedsToDiscretize = wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
-                xSpeed, ySpeed, rotation, wpimath.geometry.Rotation2d.fromDegrees(self.gyro.get_yaw().value)
+                xSpeed, ySpeed, rotation, self.getPose().rotation()
             )
         else:
             speedsToDiscretize = wpimath.kinematics.ChassisSpeeds(
@@ -192,6 +192,17 @@ class Drivetrain:
         self.field.setRobotPose(self.poseEstimator.getEstimatedPosition())
         SmartDashboard.putBoolean("target aquired",camResult.hasTargets())
 
+    def alignGyroWithField(self) -> bool:
+        camResult = self.cam.getLatestResult()
+        result = self.photonVisionPoseEstimator.update(camResult)
+        if result:
+            rotation = result.estimatedPose.toPose2d().rotation()
+            self.gyro.set_yaw(rotation.degrees())
+            return True
+        
+        return False
+        
+
     def getPose(self) -> wpimath.geometry.Pose2d:
         return self.poseEstimator.getEstimatedPosition() # we will get the robot pose from vision
     
@@ -254,7 +265,4 @@ class Drivetrain:
         self.frontRight.updateDrivePID(p,i,d)
         self.backLeft.updateDrivePID(p,i,d)
         self.backRight.updateDrivePID(p,i,d)
-
-    def reefSlam(self):
-        self.drive(.2,0,0,False)
         

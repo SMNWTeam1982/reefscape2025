@@ -66,7 +66,7 @@ class Elevator:
             ElevatorConstants.ALTITUDE_DERIVATIVE_GAIN
         )
         
-        self.altitudePIDController.setTolerance(0.1)
+        self.altitudePIDController.setTolerance(0.03) # 3 cm
 
         self.zer0AltitudeEncoders()
 

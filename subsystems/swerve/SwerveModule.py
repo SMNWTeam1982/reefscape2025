@@ -14,9 +14,8 @@ import rev
 from phoenix6 import hardware as ctre
 
 class ModuleConstants:
-    # value taken from 2024 code
-    RPM_TO_METERS_PER_SECOND_CONVERSION_MULTIPLIER = 7.049382716E-4
-    POSITION_TO_METERS_TRAVELED_MULTIPLIER = 0.2855
+    POSITION_TO_METERS_TRAVELED_MULTIPLIER = 0.31927 / 6.75 # march 25 2025
+    RPM_TO_METERS_PER_SECOND_CONVERSION_MULTIPLIER = POSITION_TO_METERS_TRAVELED_MULTIPLIER / 60 # march 25 2025
 
     # assume all values are untuned unless specified with a date of tuning
     TURN_PROPORTIONAL_GAIN = 0.73 # Jan 18 2025

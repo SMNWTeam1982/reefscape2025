@@ -5,6 +5,12 @@ import wpimath.geometry
 import wpimath.kinematics
 import robotpy_apriltag
 
+import wpimath.controller
+import wpimath.trajectory
+import wpimath
+
+from ..swerve.Drive import Drivetrain, DriveConstants
+
 
 
 def generateBranchReefSetpoint(idOfTagOnFace: int, rightBranch: bool) -> wpimath.geometry.Pose2d:
@@ -98,3 +104,62 @@ def getNearestLeft(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2d
     return robotPos.nearest(ReefNavigationConstants.REEF_LEFT_SETPOINTS)
 def getNearestRight(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2d:
     return robotPos.nearest(ReefNavigationConstants.REEF_RIGHT_SETPOINTS)
+
+# 
+class Navigator:
+    def __init__(self,driveReference: Drivetrain):
+        self.distancePID = wpimath.controller.ProfiledPIDController(
+            1.0,
+            0.0,
+            0.0,
+            wpimath.trajectory.TrapezoidProfile.Constraints(
+                0.5, # meters
+                1.0
+            )
+        )
+
+        self.distancePID.reset(0.0,0.0)
+
+        self.rotationPID = wpimath.controller.ProfiledPIDController(
+            1.0,
+            0.0,
+            0.0,
+            wpimath.trajectory.TrapezoidProfile.Constraints(
+                1.0, # radians
+                1.0
+            )
+        )
+
+        self.rotationPID.enableContinuousInput(-math.pi,math.pi)
+
+        self.rotationPID.reset(driveReference.getPose().rotation().radians(),0)
+
+        self.driveReference = driveReference
+    
+    def reset(self): # for resetting
+        self.distancePID.reset(0.0,0.0)
+        self.rotationPID.reset(self.driveReference.getPose().rotation().radians(),0)
+
+
+    def travel(self, targetPose: wpimath.geometry.Pose2d): # travels in a straight line to the target
+        currentRobotPose = self.driveReference.getPose()
+
+        distanceError = currentRobotPose.translation().distance(targetPose.translation())
+        travelDirectionFieldRelative = (targetPose.translation() - currentRobotPose.translation()).angle()
+
+        travelVector = wpimath.geometry.Translation2d(
+            self.distancePID.calculate(distanceError,0.0),
+            travelDirectionFieldRelative
+        )
+
+        self.driveReference.drive(
+            travelVector.X(),
+            travelVector.Y(),
+            self.rotationPID.calculate(
+                currentRobotPose.rotation().radians(),
+                targetPose.rotation().radians()
+            ),
+            True
+        )
+
+        

@@ -89,115 +89,47 @@ class MyRobot(wpilib.TimedRobot):
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
-        
-        # if self.driveController.getAButton():
-        #     self.elevator.intake.runWrist()
-        # else:
-        #     self.elevator.intake.runWristRaw(0)
-            
-        # if self.driveController.getBButton():
-        #     self.elevator.intake.setTargetAngle(25)
-        
-        # if self.driveController.getXButton():
-        #     self.elevator.intake.setTargetAngle(-10)
-            
-        # if self.driveController.getYButton():
-        #     self.elevator.intake.setTargetAngle(50)
-        
 
-        if self.operatorController.getAButton():
+        self.drive.updatePoseEstimation()
+        self.elevator.runStateMachine()
+
+    
+        if self.operatorController.getRawButton(1):
+            self.elevator.setL1()
+        if self.operatorController.getRawButton(2):
+            self.elevator.setL2()
+        if self.operatorController.getRawButton(3):
+            self.elevator.setL3Coral()
+        if self.operatorController.getRawButton(4):
+            self.elevator.setL3Algae()
+        if self.operatorController.getRawButton(5):
+            self.elevator.setHighAlgae()
+        if self.operatorController.getRawButton(6):
+            self.elevator.setL4()
+        if self.operatorController.getRawButton(7):
+            self.elevator.setStation()
+        if self.operatorController.getRawButton(8):
             self.elevator.setIdle()
 
-        if self.operatorController.getXButton():
-            self.elevator.setL3Coral()
-        
-        if self.operatorController.getBackButton():
-            self.elevator.setL2()
-            
-        if self.operatorController.getStartButton():
-            self.elevator.setL1()
-            
-        if self.operatorController.getBButton():
-            self.elevator.setStation()
-        
-        if self.operatorController.getYButton():
-            self.elevator.setL4()
-
-        if self.operatorController.getRightBumper():
-            self.elevator.setHighAlgae()
-        if self.operatorController.getLeftBumper():
-            self.elevator.setL3Algae()
-            
-        self.elevator.runStateMachine()
-        
-        if self.driveController.getRightBumper():
-            self.climber.runClimberRaw(0.5)
-        elif self.driveController.getLeftBumper():
-            self.climber.runClimberRaw(-0.5)
-        else:
-            self.climber.runClimberRaw(0.0)
-            
-        
-        #self.elevator.intake.runIntakeEject()
-            
-
-        # if self.driveController.getLeftBumper():
-        # #     #self.elevator.intake.runWrist()
-        #     self.elevator.runStateMachine()
-        #     self.elevator.moveElevatorRaw(0.5)
-        # elif self.driveController.getRightBumper():
-        #     self.elevator.moveElevatorRaw(-0.5)
-        # else:
-        #     self.elevator.moveElevatorRaw(0.0)
-            
-        # if self.driveController.getYButton(): # zero wrist encoders
-        #     self.elevator.zer0AltitudeEncoders()
-        #     #self.elevator.intake.zeroEncoder()
-        #     #self.elevator.intake.coralWristMotor.set(0)
-
-        if self.operatorController.getLeftY() > 0.5:
-            self.elevator.intake.coralMotor.set(-0.3)
+        if self.operatorController.getRawButton(9):
+            self.elevator.intake.coralMotor.set(-0.3) # intake
             self.elevator.intake.leftAlgaeMotor.set(0.0)
-        elif self.operatorController.getLeftY() < -0.5:
-            self.elevator.intake.coralMotor.set(0.6)
-            self.elevator.intake.leftAlgaeMotor.set(0.5)
-        else:
+        elif self.operatorController.getRawButton(10):
+            self.elevator.intake.coralMotor.set(0.6) # eject
+            self.elevator.intake.leftAlgaeMotor.set(-0.5)
+        else: 
             self.elevator.intake.coralMotor.set(0.0)
             self.elevator.intake.leftAlgaeMotor.set(0.0)
-            
-        if self.operatorController.getRightY() > 0.5:
-            self.elevator.targetHeight += 0.01
-        elif self.operatorController.getRightY() < -0.5:
-            self.elevator.targetHeight -= 0.01
-        
 
-        # returning early causes the code to not work, I commented everything else out instead
-        #return # early return for the sake of testing, this will make it so we can use the controls for other stuff
+        if self.operatorController.getRawButton(11): # change * 50 robot cycles per second
+            self.elevator.targetHeight += 0.001 # 0.05m/s
+        elif self.operatorController.getRawButton(12):
+            self.elevator.targetHeight -= 0.001 # -0.05m/s
 
-        #if self.operatorController.getButton(2):
-        #    self.elevator.setL1()
-        #if self.operatorController.getButton(1):
-        #    self.elevator.setL2()
-        #if self.operatorController.getButton(7):
-        #    self.elevator.setL3Coral()
-        #if self.operatorController.getButton(6):
-        #    self.elevator.setL4()
-        #if self.operatorController.getButton(5):
-        #    self.elevator.setHighAlgae()
-        #if self.operatorController.getButton(6):
-        #    self.elevator.setProcessor()
-        #if self.operatorController.getButton(7):
-        #    self.elevator.setStation()
-        #if self.operatorController.getButton(8):
-        #    self.elevator.setIdle()
-        #if self.operatorController.getButton(9):
-        #    self.elevator.setL3Algae()
-        #if self.operatorController.getButton(10):
-        #    self.elevator.intake.runIntakeEject()
-        #if self.driveController.getRightBumper():
-        #    self.climber.setRaised()
-        #if self.driveController.getLeftBumper():
-        #    self.climber.setLowered()
+        # we need to reduce on button count
+        # 1. fix the intake state machine we can make intake/eject into 1 button (-1 overall buttons)
+        # 2. have the robot automatically set to idle on intake/eject button release (-1 overall buttons)
+        # 3. get very precise setpoints so we can remove manual adjustment (-2 overall buttons)
 
         
     
@@ -214,24 +146,46 @@ class MyRobot(wpilib.TimedRobot):
         #         return # dont let the driver have control while nav is runnig
 
         # ---------- driver controls below this line --------------------------
-        
-        self.drive.updatePoseEstimation()
-        
-        if self.driveController.getStartButton():
-            self.drive.poseEstimator.addVisionMeasurement()
 
-        x = -self.driveController.getLeftX()
-        y = self.driveController.getLeftY()
-        turn = self.driveController.getRightX()
-        if self.driveController.getPOV() == 90:
-            self.drive.reefSlam()
+        if self.driveController.getAButton():
+            self.drive.alignGyroWithField()
+            return None
+        
+        
+
+        pov = self.driveController.getPOV()
+
+        if pov == 0:
+            self.drive.drive(0.5, 0.0, 0.0, False)
+        elif pov == 90:
+            self.drive.drive(0.0, -0.1, 0.0, False)
+        elif pov == 270:
+            self.drive.drive(0.0, 0.1, 0.0, False)
+        elif pov == 180:
+            self.drive.drive(-0.5, 0.0, 0.0, False)
         else:
+            x = -self.driveController.getLeftX()
+            y = self.driveController.getLeftY()
+            turn = self.driveController.getRightX()
+
             self.drive.drive(
-                self.deadzone(x/2),
-                self.deadzone(y/2),
-                self.deadzone(turn * 3),
+                self.deadzone(x) * x * x * 3, # has to be cubed or it will always be positive
+                self.deadzone(y) * y * y * 3, # change the response curve so values close to zero are closer to zero
+                self.deadzone(turn) * 2,
                 True
             )
+
+        if self.driveController.getRightBumper():
+            self.climber.runClimberRaw(0.5)
+        elif self.driveController.getLeftBumper():
+            self.climber.runClimberRaw(-0.5)
+        else:
+            self.climber.runClimberRaw(0.0)
+
+        if self.driveController.getAButton():
+            self.drive.alignGyroWithField()
+                
+        
         # Commented out for elevator testing - Kay 3/5
         #if self.driveController.getXButton(): # set left pos
         #    targetPose = ReefNavigator.getNearestLeft(self.drive.getPose())
