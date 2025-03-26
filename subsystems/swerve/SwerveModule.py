@@ -23,11 +23,13 @@ class ModuleConstants:
     TURN_DERIVATIVE_GAIN = 0.01 # Jan 18 2025
 
     # assume all values are untuned unless specified with a date of tuning
-    DRIVE_PROPORTIONAL_GAIN = 0.0
+    DRIVE_PROPORTIONAL_GAIN = 0.01
     DRIVE_INTEGRAL_GAIN = 0.0
     DRIVE_DERIVATIVE_GAIN = 0.0
     DRIVE_STATIC_GAIN_VOLTS = 0.05 # this number is made up
     DRIVE_VELOCITY_GAIN_VOLT_SECONDS_PER_METER = 2.87 # Jan 18 2025
+
+    DRIVE_MOTOR_CONFIGURATION = rev.SparkBaseConfig().smartCurrentLimit(40).setIdleMode(rev.SparkBaseConfig.IdleMode.kCoast)
 
     
 
@@ -117,12 +119,19 @@ class Wheel:
         desiredState.cosineScale(encoderRotation)
 
         # Calculate the drive output from the drive PID controller. this will be added to the FF voltage
-        driveOutput = self.drivePIDController.calculate(
+        drivePidOutput = self.drivePIDController.calculate(
             self.driveEncoder.getVelocity() * ModuleConstants.RPM_TO_METERS_PER_SECOND_CONVERSION_MULTIPLIER,
             desiredState.speed
         )
 
         driveFeedforward = self.driveFeedforward.calculate(desiredState.speed) # converts mps to volts
+
+        driveOutput = drivePidOutput + driveFeedforward
+
+        if driveOutput > 12.0:
+            driveOutput = 12.0
+        if driveOutput < -12.0:
+            driveOutput = 12.0
 
         # Calculate the turning motor output from the turning PID controller.
         turnOutput = self.turningPIDController.calculate(
@@ -133,8 +142,9 @@ class Wheel:
             turnOutput = 1.0
         if turnOutput < -1.0:
             turnOutput = -1.0
+        
 
-        self.driveMotor.setVoltage( driveOutput + driveFeedforward ) # Volts because of feedforward
+        self.driveMotor.setVoltage( driveOutput ) # Volts because of feedforward
         self.turningMotor.set(-turnOutput) # use percent for turning
 
     def updateTurnPID(self, p: float, i: float, d: float):

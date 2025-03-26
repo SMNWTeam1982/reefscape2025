@@ -29,13 +29,15 @@ def generateBranchReefSetpoint(idOfTagOnFace: int, rightBranch: bool) -> wpimath
         wpimath.units.inchesToMeters(verticalShift),
     )
 
-    newTranslation = westRightTranslation.rotateBy(tagPose.rotation())
+    newTranslation = wpimath.geometry.Translation2d(
+        westRightTranslation.norm(),
+        westRightTranslation.angle() + tagPose.rotation()
+    )
 
-    return tagPose.transformBy( # tranform the tag pose to be a reef setpoint
-    	wpimath.geometry.Transform2d(
-        	newTranslation, # shift the tag pose by the correct amonut
-            wpimath.geometry.Rotation2d.fromDegrees(180) # face towards the tag
-        )
+    return wpimath.geometry.Pose2d(
+        tagPose.X() + newTranslation.X(),
+        tagPose.Y() + newTranslation.Y(),
+        tagPose.rotation() + wpimath.geometry.Rotation2d.fromDegrees(180.0)
     )
         
 class ReefNavigationConstants:
@@ -90,7 +92,7 @@ class ReefNavigationConstants:
     ]
 
     BLUE_L1_SETPOINTS = [
-        # :>
+        # :> 
     ]
 
 # dont have L1 points defined
@@ -118,7 +120,7 @@ class Navigator:
         self.distancePID.reset(0.0,0.0)
 
         self.rotationPID = wpimath.controller.ProfiledPIDController(
-            0.2,
+            1.0,
             0.0,
             0.0,
             wpimath.trajectory.TrapezoidProfile.Constraints(

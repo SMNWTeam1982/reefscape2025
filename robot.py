@@ -1,7 +1,10 @@
 import math
 import wpilib
+import wpimath.controller
+import wpimath.filter
 import wpimath.kinematics
 import wpimath
+import wpimath.trajectory
 from subsystems.swerve import Drive
 from subsystems.auto import Auto, ReefNavigator
 from subsystems.elevator import Elevator
@@ -28,6 +31,11 @@ class MyRobot(wpilib.TimedRobot):
 
         self.auto = Auto.SwerveAuto(self.drive)
         self.nav = ReefNavigator.Navigator(self.drive)
+
+        self.yRateLimiter = wpimath.filter.SlewRateLimiter(0.5,-0.5,0)
+        self.xRateLimiter = wpimath.filter.SlewRateLimiter(0.5,-0.5,0)
+        self.thetaRateLimiter = wpimath.filter.SlewRateLimiter(1.0,-1.0,0)
+
         
         self.runningReefNavigation = False
 
@@ -111,18 +119,20 @@ class MyRobot(wpilib.TimedRobot):
             self.elevator.setL4()
         if self.operatorController.getRawButton(7):
             self.elevator.setStation()
-        if self.operatorController.getRawButton(8):
-            self.elevator.setIdle()
+        # if self.operatorController.getRawButton(8):
+        #     self.elevator.setIdle()
 
-        if self.operatorController.getRawButton(9):
-            self.elevator.intake.coralMotor.set(-0.3) # intake
-            self.elevator.intake.leftAlgaeMotor.set(0.0)
-        elif self.operatorController.getRawButton(10):
-            self.elevator.intake.coralMotor.set(0.6) # eject
-            self.elevator.intake.leftAlgaeMotor.set(-0.5)
-        else: 
-            self.elevator.intake.coralMotor.set(0.0)
-            self.elevator.intake.leftAlgaeMotor.set(0.0)
+        self.elevator.intake.runIntakeEject(self.operatorController.getRawButton(9))
+
+        # if self.operatorController.getRawButton(9):
+        #     self.elevator.intake.coralMotor.set(-0.3) # intake
+        #     self.elevator.intake.leftAlgaeMotor.set(0.0)
+        # elif self.operatorController.getRawButton(10):
+        #     self.elevator.intake.coralMotor.set(0.6) # eject
+        #     self.elevator.intake.leftAlgaeMotor.set(-0.5)
+        # else: 
+        #     self.elevator.intake.coralMotor.set(0.0)
+        #     self.elevator.intake.leftAlgaeMotor.set(0.0)
 
         if self.operatorController.getRawButton(11): # change * 50 robot cycles per second
             self.elevator.targetHeight += 0.001 # 0.05m/s
@@ -130,8 +140,8 @@ class MyRobot(wpilib.TimedRobot):
             self.elevator.targetHeight -= 0.001 # -0.05m/s
 
         # we need to reduce on button count
-        # 1. fix the intake state machine we can make intake/eject into 1 button (-1 overall buttons)
-        # 2. have the robot automatically set to idle on intake/eject button release (-1 overall buttons)
+        # 1. fix the intake state machine we can make intake/eject into 1 button (-1 overall buttons) # done
+        # 2. have the robot automatically set to idle on intake/eject button release (-1 overall buttons) # done, dont need to set to idle state in first place
         # 3. get very precise setpoints so we can remove manual adjustment (-2 overall buttons)
 
         
@@ -164,20 +174,20 @@ class MyRobot(wpilib.TimedRobot):
         if pov == 0:
             self.drive.drive(0.5, 0.0, 0.0, False)
         elif pov == 90:
-            self.drive.drive(0.0, -0.1, 0.0, False)
+            self.drive.drive(0.0, -0.3, 0.0, False)
         elif pov == 270:
-            self.drive.drive(0.0, 0.1, 0.0, False)
+            self.drive.drive(0.0, 0.3, 0.0, False)
         elif pov == 180:
             self.drive.drive(-0.5, 0.0, 0.0, False)
         else:
             x = -self.driveController.getLeftY()
             y = -self.driveController.getLeftX()
-            turn = self.driveController.getRightX()
+            turn = self.driveController.getRightX() * 5
 
             self.drive.drive(
-                self.deadzone(x), 
-                self.deadzone(y),
-                self.deadzone(turn) * 3,
+                self.deadzone(self.xRateLimiter.calculate(x)), 
+                self.deadzone(self.yRateLimiter.calculate(y)),
+                self.deadzone(self.thetaRateLimiter.calculate(turn)),
                 True
             )
 

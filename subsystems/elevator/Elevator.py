@@ -29,7 +29,7 @@ class ElevatorConstants:
 
     IDLE_TARGET_HEIGHT = 0.6
 
-    ALTITUDE_PROPORTIONAL_GAIN = 10
+    ALTITUDE_PROPORTIONAL_GAIN = 12
     ALTITUDE_INTEGRAL_GAIN = 0.0
     ALTITUDE_DERIVATIVE_GAIN = 0.0
 
@@ -38,7 +38,7 @@ class ElevatorConstants:
     ELEVATOR_MAX_HEIGHT_METERS = 1.81
     ELEVATOR_MIN_HEIGHT_METERS = ELEVATOR_HEIGHT_OFFSET
     
-    ALTITUDE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(25).setIdleMode(rev.SparkBaseConfig.IdleMode.kCoast)
+    ALTITUDE_MOTOR_CONFIG = rev.SparkBaseConfig().smartCurrentLimit(30).setIdleMode(rev.SparkBaseConfig.IdleMode.kCoast)
     
 
 class Elevator:
