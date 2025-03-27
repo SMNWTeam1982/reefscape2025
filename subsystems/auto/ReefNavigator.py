@@ -131,8 +131,8 @@ class Navigator:
             0.0,
             0.0,
             wpimath.trajectory.TrapezoidProfile.Constraints(
-                1.0, # radians
-                1.0
+                3.0, # radians
+                3.0
             )
         )
 

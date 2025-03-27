@@ -5,6 +5,7 @@
 #
 import wpimath.units
 import math
+import time
 import wpimath.geometry
 from wpilib import Field2d
 import wpimath.kinematics
@@ -83,7 +84,7 @@ class Drivetrain:
             wpimath.geometry.Pose2d(),
             # closer to 0 is more trust
             (0.05, 0.05, 0.1), # module data is relatively stable
-            (0.5, 0.5, 3) # vision has jitter
+            (0.5, 0.5, 1) # vision has jitter
         )
 
         self.field = Field2d()
@@ -204,35 +205,10 @@ class Drivetrain:
         SmartDashboard.putNumberArray("robot pose data",[pose.X(),pose.Y(),pose.rotation().radians()])
 
     def fieldOrient(self): # make sure to call this function with an april tag visible
-        poses: list[wpimath.geometry.Pose2d] = []
-        for _ in range(10):
-            camResult = self.cam.getLatestResult()
-            result = self.photonVisionPoseEstimator.update(camResult)
-            if result:
-                poses.append(
-                    result.estimatedPose.toPose2d()
-                )
-
-        x_total = 0
-        y_total = 0
-        theta_total = 0
-
-        for pose in poses:
-            x_total += pose.X()
-            y_total += pose.Y()
-            theta_total += pose.rotation().radians()
-        
-        x_average = x_total / len(poses)
-        y_average = y_total / len(poses)
-        theta_average = theta_total / len(poses)
-
-        average_pose = wpimath.geometry.Pose2d(
-            x_average,
-            y_average,
-            wpimath.geometry.Rotation2d(theta_average)
-        )
-
-        self.resetPose(average_pose)
+        camResult = self.cam.getLatestResult()
+        result = self.photonVisionPoseEstimator.update(camResult)
+        if result:
+            self.resetPose(result.estimatedPose.toPose2d())
 
 
             

@@ -94,16 +94,23 @@ class MyRobot(wpilib.TimedRobot):
         SmartDashboard.putNumber("p error", pidController.getPositionError())
         SmartDashboard.putNumber("i error", pidController.getAccumulatedError())
         SmartDashboard.putNumber("d error", pidController.getVelocityError())
+
     def autonomousInit(self):
-        pass
-    def autonomousPeriodic(self):
-        #self.auto.runAuto()
-        pass
+        self.drive.fieldOrient() # UNTESTED FUNCTION !!! UNTESTED FUNCTION !!! UNTESTED FUNCTION !!!
+        self.elevator.zer0AltitudeEncoders()
+        self.elevator.intake.zeroEncoder()
+        self.autoTimer = wpilib.Timer()
+        self.autoTimer.start()
+            
+    def autonomousPeriodic(self): # UNTESTED AUTO !!! UNTESTED AUTO !!! UNTESTED AUTO !!!
+        self.elevator.runStateMachine()
+        if self.autoTimer.get() < 5:
+            self.drive.drive(0.21,0.0,0.0,False) 
+
     def teleopInit(self):
         pass
     def teleopPeriodic(self):
         self.elevator.runStateMachine()
-
     
         if self.operatorController.getRawButton(10): ####
             self.elevator.setL1()
@@ -135,9 +142,9 @@ class MyRobot(wpilib.TimedRobot):
         #     self.elevator.intake.leftAlgaeMotor.set(0.0)
 
         if self.operatorController.getRawButton(11): # change * 50 robot cycles per second ####
-            self.elevator.targetHeight += 0.001 # 0.05m/s
+            self.elevator.targetHeight += 0.002 # 0.10m/s
         elif self.operatorController.getRawButton(12): ####
-            self.elevator.targetHeight -= 0.001 # -0.05m/s
+            self.elevator.targetHeight -= 0.002 # -0.10m/s
 
         # we need to reduce on button count
         # 1. fix the intake state machine we can make intake/eject into 1 button (-1 overall buttons) # done
@@ -160,10 +167,10 @@ class MyRobot(wpilib.TimedRobot):
 
         # ---------- driver controls below this line --------------------------
         
-        if self.driveController.getXButton():
+        if self.driveController.getBButton():
             self.nav.travel(ReefNavigator.getNearestLeft(self.drive.getPose()))
             return
-        elif self.driveController.getBButton():
+        elif self.driveController.getXButton():
             self.nav.travel(ReefNavigator.getNearestRight(self.drive.getPose()))
             return
         
@@ -180,9 +187,14 @@ class MyRobot(wpilib.TimedRobot):
         elif pov == 180:
             self.drive.drive(-0.5, 0.0, 0.0, False)
         else:
+
             x = -self.driveController.getLeftY()
             y = -self.driveController.getLeftX()
             turn = self.driveController.getRightX()
+
+            if wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed:
+                x = -x
+                y = -y
 
             self.drive.drive(
                 self.deadzone(x), 
