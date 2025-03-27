@@ -17,8 +17,8 @@ from . import Intake
 
 class ElevatorConstants:
     LEVEL_1_TARGET_HEIGHT = 0.61
-    LEVEL_2_TARGET_HEIGHT = 0.8
-    LEVEL_3_TARGET_HEIGHT = 1.22
+    LEVEL_2_TARGET_HEIGHT = 1.05 # change
+    LEVEL_3_TARGET_HEIGHT = 1.268
     LEVEL_4_TARGET_HEIGHT = 1.8
 
     ALGAE_2_TARGET_HEIGHT = 1.2
@@ -29,11 +29,11 @@ class ElevatorConstants:
 
     IDLE_TARGET_HEIGHT = 0.6
 
-    ALTITUDE_PROPORTIONAL_GAIN = 12
+    ALTITUDE_PROPORTIONAL_GAIN = 4
     ALTITUDE_INTEGRAL_GAIN = 0.0
     ALTITUDE_DERIVATIVE_GAIN = 0.0
 
-    MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER = 1.24744 / 462.3308 # march 22 2025
+    MOTOR_ROTATIONS_TO_ELEVATOR_HEIGHT_METERS_MULTIPLIER = 1.24744 / 110.5728 # march 26 2025
     ELEVATOR_HEIGHT_OFFSET = 0.56256
     ELEVATOR_MAX_HEIGHT_METERS = 1.81
     ELEVATOR_MIN_HEIGHT_METERS = ELEVATOR_HEIGHT_OFFSET
@@ -66,7 +66,7 @@ class Elevator:
             ElevatorConstants.ALTITUDE_DERIVATIVE_GAIN
         )
         
-        self.altitudePIDController.setTolerance(0.03) # 3 cm
+        self.altitudePIDController.setTolerance(0.01) # 1 cm
 
         self.zer0AltitudeEncoders()
 
@@ -108,8 +108,8 @@ class Elevator:
 
     def logStateMachineState(self):
         SmartDashboard.putString("current elevator state", self.activeStateMachine.__name__)
-        SmartDashboard.putString("current coral intake state", self.intake.coralIntakeState.name)
-        SmartDashboard.putString("current algae intake state", self.intake.algaeIntakeState.name)
+        # SmartDashboard.putString("current coral intake state", self.intake.coralIntakeState.name)
+        # SmartDashboard.putString("current algae intake state", self.intake.algaeIntakeState.name)
 
     def moveElevator(self): # run pid
         output = self.altitudePIDController.calculate(self.getElevatorHeight(),self.targetHeight)

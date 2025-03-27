@@ -32,9 +32,9 @@ class MyRobot(wpilib.TimedRobot):
         self.auto = Auto.SwerveAuto(self.drive)
         self.nav = ReefNavigator.Navigator(self.drive)
 
-        self.yRateLimiter = wpimath.filter.SlewRateLimiter(0.5,-0.5,0)
-        self.xRateLimiter = wpimath.filter.SlewRateLimiter(0.5,-0.5,0)
-        self.thetaRateLimiter = wpimath.filter.SlewRateLimiter(1.0,-1.0,0)
+        self.yRateLimiter = wpimath.filter.SlewRateLimiter(5.0,-5.0,0)
+        self.xRateLimiter = wpimath.filter.SlewRateLimiter(5.0,-5.0,0)
+        self.thetaRateLimiter = wpimath.filter.SlewRateLimiter(5.0,-5.0,0)
 
         
         self.runningReefNavigation = False
@@ -105,24 +105,24 @@ class MyRobot(wpilib.TimedRobot):
         self.elevator.runStateMachine()
 
     
-        if self.operatorController.getRawButton(1):
+        if self.operatorController.getRawButton(10): ####
             self.elevator.setL1()
-        if self.operatorController.getRawButton(2):
+        if self.operatorController.getRawButton(6): ####
             self.elevator.setL2()
-        if self.operatorController.getRawButton(3):
+        if self.operatorController.getRawButton(5): ####
             self.elevator.setL3Coral()
-        if self.operatorController.getRawButton(4):
+        if self.operatorController.getRawButton(4): ####
             self.elevator.setL3Algae()
-        if self.operatorController.getRawButton(5):
+        if self.operatorController.getRawButton(3): ####
             self.elevator.setHighAlgae()
-        if self.operatorController.getRawButton(6):
+        if self.operatorController.getRawButton(8): ####
             self.elevator.setL4()
-        if self.operatorController.getRawButton(7):
+        if self.operatorController.getRawButton(7): ####
             self.elevator.setStation()
         # if self.operatorController.getRawButton(8):
         #     self.elevator.setIdle()
 
-        self.elevator.intake.runIntakeEject(self.operatorController.getRawButton(9))
+        self.elevator.intake.runIntakeEject(self.operatorController.getRawButton(2)) ####
 
         # if self.operatorController.getRawButton(9):
         #     self.elevator.intake.coralMotor.set(-0.3) # intake
@@ -134,9 +134,9 @@ class MyRobot(wpilib.TimedRobot):
         #     self.elevator.intake.coralMotor.set(0.0)
         #     self.elevator.intake.leftAlgaeMotor.set(0.0)
 
-        if self.operatorController.getRawButton(11): # change * 50 robot cycles per second
+        if self.operatorController.getRawButton(11): # change * 50 robot cycles per second ####
             self.elevator.targetHeight += 0.001 # 0.05m/s
-        elif self.operatorController.getRawButton(12):
+        elif self.operatorController.getRawButton(12): ####
             self.elevator.targetHeight -= 0.001 # -0.05m/s
 
         # we need to reduce on button count
@@ -182,12 +182,12 @@ class MyRobot(wpilib.TimedRobot):
         else:
             x = -self.driveController.getLeftY()
             y = -self.driveController.getLeftX()
-            turn = self.driveController.getRightX() * 5
+            turn = self.driveController.getRightX()
 
             self.drive.drive(
-                self.deadzone(self.xRateLimiter.calculate(x)), 
-                self.deadzone(self.yRateLimiter.calculate(y)),
-                self.deadzone(self.thetaRateLimiter.calculate(turn)),
+                self.deadzone(x), 
+                self.deadzone(y),
+                self.deadzone(turn) * 3,
                 True
             )
 
@@ -224,7 +224,13 @@ class MyRobot(wpilib.TimedRobot):
     def testInit(self):
         pass
     def testPeriodic(self):
-        pass
+        
+        if self.driveController.getRightBumper():
+            self.elevator.moveElevatorRaw(0.2)
+        elif self.driveController.getLeftBumper():
+            self.elevator.moveElevatorRaw(-0.2)
+        else:
+            self.elevator.moveElevatorRaw(0.0)
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)

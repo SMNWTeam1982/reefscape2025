@@ -235,7 +235,7 @@ class Intake:
 
     def runIntakeEject(self, active: bool):
         if active:
-            if self.intaking:
+            if not self.intaking:
                 self.coralMotor.set(-0.3) # intake
                 self.leftAlgaeMotor.set(0.0)
             else:
