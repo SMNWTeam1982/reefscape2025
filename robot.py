@@ -99,13 +99,10 @@ class MyRobot(wpilib.TimedRobot):
         self.drive.fieldOrient() # UNTESTED FUNCTION !!! UNTESTED FUNCTION !!! UNTESTED FUNCTION !!!
         self.elevator.zer0AltitudeEncoders()
         self.elevator.intake.zeroEncoder()
-        self.autoTimer = wpilib.Timer()
-        self.autoTimer.start()
             
     def autonomousPeriodic(self): # UNTESTED AUTO !!! UNTESTED AUTO !!! UNTESTED AUTO !!!
         self.elevator.runStateMachine()
-        if self.autoTimer.get() < 5:
-            self.drive.drive(0.21,0.0,0.0,False) 
+        self.drive.drive(0.21,0.0,0.0,False)
 
     def teleopInit(self):
         pass
