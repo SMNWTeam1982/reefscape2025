@@ -28,6 +28,7 @@ robotpy_extras = [
 # Other pip packages to install
 requires = [
     "photonlibpy",
+    "robotpy-cscore"
 ]
 
 [project]

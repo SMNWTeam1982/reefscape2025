@@ -17,7 +17,7 @@ def generateBranchReefSetpoint(idOfTagOnFace: int, rightBranch: bool) -> wpimath
 
     tagPose = robotpy_apriltag.AprilTagFieldLayout.getTagPose(robotpy_apriltag.AprilTagFieldLayout.loadField(robotpy_apriltag.AprilTagField.kDefaultField), idOfTagOnFace).toPose2d() # get the pose of the tag we want
 
-    verticalShift = -6 # offset of the intake
+    verticalShift = -3.25 # offset of the intake
 
     if rightBranch: # shift to the left or right branch
         verticalShift -= 6.5
@@ -106,7 +106,7 @@ def getNearestRight(robotPos: wpimath.geometry.Pose2d) -> wpimath.geometry.Pose2
 
 
 def deadzone(num: float) -> float:
-    if abs(num) < 0.05:
+    if abs(num) < 0.01:
         return 0.0
     return num
 
@@ -115,7 +115,7 @@ def deadzone(num: float) -> float:
 class Navigator:
     def __init__(self,driveReference: Drivetrain):
         self.distancePID = wpimath.controller.ProfiledPIDController(
-            2.0,
+            2.5,
             0.0,
             0.0,
             wpimath.trajectory.TrapezoidProfile.Constraints(
@@ -127,12 +127,12 @@ class Navigator:
         self.distancePID.reset(0.0,0.0)
 
         self.rotationPID = wpimath.controller.ProfiledPIDController(
-            3.0,
+            6,
             0.0,
             0.0,
             wpimath.trajectory.TrapezoidProfile.Constraints(
-                3.0, # radians
-                3.0
+                2.0, # radians
+                1.0
             )
         )
 
@@ -161,8 +161,8 @@ class Navigator:
         )
 
         self.driveReference.drive(
-            deadzone(-travelVector.X()),
-            deadzone(-travelVector.Y()),
+            -travelVector.X(),
+            -travelVector.Y(),
             self.rotationPID.calculate(
                 currentRobotPose.rotation().radians(),
                 targetPose.rotation().radians()

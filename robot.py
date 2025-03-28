@@ -11,6 +11,8 @@ from subsystems.elevator import Elevator
 from subsystems.elevator import Intake
 from subsystems.climber import Climber
 from wpilib import SmartDashboard
+
+import cscore
 # from photonlibpy.photonPoseEstimator import PoseStrategy
 # from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
@@ -21,10 +23,12 @@ class MyRobot(wpilib.TimedRobot):
         self.elevator = Elevator.Elevator(self.powerDistributionModule)
         self.climber = Climber.Climber()
         self.driveController = wpilib.XboxController(0)
-
+        wpilib.CameraServer.launch("vision.py:main")
+        
         # We are NOT using this at comp - Kay
         #self.guitar = wpilib.XboxController(1)
         self.operatorController = wpilib.XboxController(1)
+        SmartDashboard.putData
 
         self.elevatorTimer = wpilib.Timer()
         self.climberTimer = wpilib.Timer()
@@ -102,10 +106,10 @@ class MyRobot(wpilib.TimedRobot):
             
     def autonomousPeriodic(self): # UNTESTED AUTO !!! UNTESTED AUTO !!! UNTESTED AUTO !!!
         self.elevator.runStateMachine()
-        self.drive.drive(0.21,0.0,0.0,False)
+        self.drive.drive(0.2,0.0,0.0,False)
 
     def teleopInit(self):
-        pass
+        self.nav.reset()
     def teleopPeriodic(self):
         self.elevator.runStateMachine()
     
@@ -171,6 +175,9 @@ class MyRobot(wpilib.TimedRobot):
             self.nav.travel(ReefNavigator.getNearestRight(self.drive.getPose()))
             return
         
+        if self.driveController.getAButton():
+            self.nav.reset()
+        
         
 
         pov = self.driveController.getPOV()
@@ -194,8 +201,8 @@ class MyRobot(wpilib.TimedRobot):
                 y = -y
 
             self.drive.drive(
-                self.deadzone(x), 
-                self.deadzone(y),
+                self.deadzone(x) * 2, 
+                self.deadzone(y) * 2,
                 self.deadzone(turn) * 3,
                 True
             )
