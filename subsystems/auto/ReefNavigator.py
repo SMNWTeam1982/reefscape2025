@@ -15,7 +15,10 @@ from ..swerve.Drive import Drivetrain, DriveConstants
 
 def generateBranchReefSetpoint(idOfTagOnFace: int, rightBranch: bool) -> wpimath.geometry.Pose2d:
 
-    tagPose = robotpy_apriltag.AprilTagFieldLayout.getTagPose(robotpy_apriltag.AprilTagFieldLayout.loadField(robotpy_apriltag.AprilTagField.kDefaultField), idOfTagOnFace).toPose2d() # get the pose of the tag we want
+    tagPose = robotpy_apriltag.AprilTagFieldLayout.getTagPose(
+        robotpy_apriltag.AprilTagFieldLayout.loadField(robotpy_apriltag.AprilTagField.kDefaultField),
+        idOfTagOnFace
+    ).toPose2d() # get the pose of the tag we want
 
     verticalShift = -3.25 # offset of the intake
 
